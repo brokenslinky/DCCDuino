@@ -1,0 +1,2 @@
+As hosted, the code is written for rotary switches from https://www.dfrobot.com/product-970.html 
+Feel free to modify the code to suit other switches.
