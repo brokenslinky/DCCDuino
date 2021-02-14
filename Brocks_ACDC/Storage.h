@@ -10,26 +10,26 @@
 #include <EEPROM.h>
 
 // Get the ability to read/write doubles on EEPROM
-void EEPROM_write_float(int ee, float value) {
+void EEPROM_write_float(int EEPROM_addr, float value) {
     byte* p = (byte*)(void*)&value;
     for (int i = 0; i < sizeof(value); i++) {
-        EEPROM.write(ee++, *p++);
+        EEPROM.write(EEPROM_addr++, *p++);
     }
 }
 
-float EEPROM_read_float(int ee) {
+float EEPROM_read_float(int EEPROM_addr) {
     float value = 0.0;
     byte* p = (byte*)(void*)&value;
     for (int i = 0; i < sizeof(value); i++) {
-        *p++ = EEPROM.read(ee++);
+        *p++ = EEPROM.read(EEPROM_addr++);
     }
     return value;
 }
 
-void EEPROM_write_vector(int addr, float value[3]) {
+void EEPROM_write_vector(int EEPROM_addr, float value[3]) {
     byte* p = (byte*)(void*)&value;
     for (int i = 0; i < sizeof(float[3]); i++) {
-        EEPROM.write(addr++, *p++);
+        EEPROM.write(EEPROM_addr++, *p++);
     }
 }
 

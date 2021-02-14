@@ -7,6 +7,10 @@ OrientationMatrix::OrientationMatrix() {
     dvertdx = 0, dvertdy = 0, dvertdz = 0;
 }
 
+OrientationMatrix::~OrientationMatrix() {
+    // Nothing
+}
+
 float OrientationMatrix::longitudinal(float& x, float& y, float& z) {
     return dlongdx * x + dlongdy * y + dlongdz * z;
 }

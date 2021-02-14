@@ -7,6 +7,7 @@ struct OrientationMatrix
     float dvertdx, dvertdy, dvertdz;
 
     OrientationMatrix();
+    ~OrientationMatrix();
 
     // Update the orientation_matrix based on the initial_orientation vector
     void update(float x_0, float y_0, float z_0);

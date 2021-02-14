@@ -88,16 +88,6 @@ float speedCorrection    = 1.0;
 boolean toss = true;
 uint16_t numberSpeedData = 0;
 
-// Variables used for rotation correction
-float slipError;
-int turnEnd;
-int turnStart;
-boolean turning;
-int iterationsDuringTurn;
-int yawSum;
-int previousIterationsDuringTurn;
-int previousYawSum;
-
 // Variables for dynamic corrections
 unsigned long lastTick = 0;
 unsigned long interval = 1;
