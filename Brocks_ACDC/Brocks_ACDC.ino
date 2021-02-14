@@ -1,7 +1,6 @@
 #include "Brocks_ACDC.h"
 
-void setup()
-{
+void setup() {
   Serial.begin(9600);
   Wire.begin();
   
@@ -41,131 +40,74 @@ void setup()
   // Prepare LED
   digitalWrite(LED_GROUND_PIN, LOW);
   // Display orange light for initialization
-  analogWrite(RED_PIN, 255);
-  analogWrite(GREEN_PIN, 125);
-  analogWrite(BLUE_PIN, 0);
+  led_light(255, 125, 0);
 
-  float orientationCal[4];
+  float orientationCal[3];
 
-  // Default calibration values... delete these after calibration
-  speedCal = 1024; // <a_y/v>/<yaw>
-  orientationCal[0] = 1/2; // x/g
-  orientationCal[1] = 0; // y/g
-  orientationCal[2] = sqrt(3)/2; // z/g
-  orientationCal[4] = 1/2; // r/g
-  for (int i = 0; i < 3; i++) 
-  {
-    accelZero[i] = 0;
-    accelScale[i] = 0.1;
-  }
-  // This estimates no yaw offset, 30 degree pitch, no roll, perfect sero balance and scale
+  // Default calibration values
+  // orientationCal[0] = sqrt(3)/2; // x/g
+  // orientationCal[1] = 0;         // y/g
+  // orientationCal[2] = 1/2;       // z/g
+  // for (int i = 0; i < 3; i++) {
+  //   accelZero[i]  = 0;
+  //   accelScale[i] = 0.1;
+  // }
+  // This estimates no yaw offset, 60 degree pitch, no roll, perfect zero balance and scale
 
   // Pull calibration data from EEPROM
-  lcd_keyad.clear();
-  lcd_keyad.setCursor(0,0);
-  lcd_keyad.print("Getting cal data");
-  lcd_keyad.setCursor(0,1);
-  lcd_keyad.print("from EEPROM...  ");
-  speedCal = EEPROM_readFloat(SPEED_CAL_ADDR);
-  for (int i = 0; i < 3; i++) 
-  {
-    accelZero[i] = EEPROM_readFloat(ZERO_CAL_ADDR + 4 * i);
-    gyroOffset[i] = EEPROM_readFloat(ZERO_CAL_ADDR + (3 + i) * 4);
-    accelScale[i] = EEPROM_readFloat(SCALE_CAL_ADDR + 4 * i);
-  }
-  for (int i = 0; i<4; i++)
-  {
-    orientationCal[i] = EEPROM_readFloat(ORIENTATION_CAL_ADDR + 4 * i);
-  }
-  // Assign calibration data to RAM
-  zxgr = orientationCal[2] * orientationCal[0] / orientationCal[3];
-  zygr = orientationCal[2] * orientationCal[1] / orientationCal[3];
-  xg = orientationCal[0];
-  yg = orientationCal[1];
-  zg = orientationCal[2];
-  rg = orientationCal[3];
+  lcd_print("Getting cal data", "from EEPROM...  ");
+  EEPROM_read_vector(ZERO_CAL_ADDR,        accelZero);
+  EEPROM_read_vector(ZERO_CAL_ADDR + 3*4,  gyroOffset);
+  EEPROM_read_vector(SCALE_CAL_ADDR,       accelScale);
+  EEPROM_read_vector(ORIENTATION_CAL_ADDR, orientationCal);
 
-  /*
-  // zero the gyros
-  delay(500);
-  for (int j = 0; j < 3; j ++)
-  {
-    gyroOffset[j] = 0;
-  }
-  for (int i = 0; i < calibrationIterations; i++)
-  {
-    IMU.readGyroscope(unadjusted_rotation[0], unadjusted_rotation[1], unadjusted_rotation[2])
-    for (int j = 0; j<3; j++)
-    {
-      gyroOffset[j] += unadjusted_rotation[j];
-    }
-  }
-  for (int j = 0; j<3; j++)
-  {
-    gyroOffset[j] /= calibrationIterations;
-  }
-  */
+  // Create calibration matrix from orientation data
+  orientation_matrix.update(orientationCal);
 
   // Display blue light to indicate readiness
-  analogWrite(RED_PIN, 0);
-  analogWrite(GREEN_PIN, 0);
-  analogWrite(BLUE_PIN, 255);
-  lcd_keyad.clear();
-  lcd_keyad.setCursor(0,0);
-  lcd_keyad.print("Ready to race.  ");
+  led_light(0, 0, 255);
+  lcd_print("Ready to race.  ");
 }
 
-void loop()
-{
+void loop() {
+  // Check the speedometer signal every iteration to make sure no pulses are missed.
   checkSpeedo();
-  lcd_keyad.setCursor(0,0);
   
+  // Refresh data from Inertial Measurement Unit.
   IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
   IMU.readGyroscope(unadjusted_rotation[0], unadjusted_rotation[1], unadjusted_rotation[2]);
-  
-  /*double accelerationX = unadjusted_accel[0] * 0.038305; // in m/s^2 //0.00390625; // in Gs
-  double accelerationY = unadjusted_accel[1] * 0.038305;
-  double yawRate = unadjusted_rotation[5] * 1.0793385355081877697;*/    // in 10,000 rad/s
-  float longitudinalAccelRaw = zxgr * (unadjusted_accel[0] - accelZero[0]) * accelScale[0] - zygr * (unadjusted_accel[1] - accelZero[1]) * accelScale[1] - xg * (unadjusted_accel[2] - accelZero[2]) * accelScale[2];
-  float lateralAccelRaw = zygr * (unadjusted_accel[0] - accelZero[0]) * accelScale[0] + zxgr * (unadjusted_accel[1] - accelZero[1]) * accelScale[1] + yg * (unadjusted_accel[2] - accelZero[2]) * accelScale[2];
-  float verticalAccelRaw = zg * (unadjusted_accel[2] - accelZero[2]) * accelScale[2] + rg * sqrt((unadjusted_accel[0] - accelZero[0]) * accelScale[0] * (unadjusted_accel[0] - accelZero[0]) * accelScale[0] + (unadjusted_accel[1] - accelZero[1]) * accelScale[1] * (unadjusted_accel[1] - accelZero[1]) * accelScale[1]);
-  float rollRateRaw = zxgr * (unadjusted_rotation[0] - gyroOffset[0]) - zygr * (unadjusted_rotation[1] - gyroOffset[1]) - xg * (unadjusted_rotation[2] - gyroOffset[2]);
-  float pitchRateRaw = zygr * (unadjusted_rotation[0] - gyroOffset[0]) + zxgr * (unadjusted_rotation[1] - gyroOffset[1]) + yg * (unadjusted_rotation[2] - gyroOffset[2]);
-  float yawRateRaw = zg * (unadjusted_rotation[2] - gyroOffset[2]) + rg * sqrt((unadjusted_rotation[0] - gyroOffset[0]) * (unadjusted_rotation[0] - gyroOffset[0]) + (unadjusted_rotation[1] - gyroOffset[1]) * (unadjusted_rotation[1] - gyroOffset[1]));  
+
+  // Zero and scale the sensor data.
+  float x = (unadjusted_accel[0] - accelZero[0]) * accelScale[0];
+  float y = (unadjusted_accel[1] - accelZero[1]) * accelScale[1];
+  float z = (unadjusted_accel[2] - accelZero[2]) * accelScale[2];
+  float x_rot = (unadjusted_rotation[0] - accelZero[0]) * accelScale[0];
+  float y_rot = (unadjusted_rotation[1] - accelZero[1]) * accelScale[1];
+  float z_rot = (unadjusted_rotation[2] - accelZero[2]) * accelScale[2];
+
+  // Convert from sensor coordinates to vehicle coordinates.
+  float longitudinalAccel = orientation_matrix.longitudinal(x, y, z);
+  float lateralAccel      = orientation_matrix.lateral     (x, y, z);
+  float verticalAccel     = orientation_matrix.vertical    (x, y, z);
+  float rollRate          = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
+  float pitchRate         = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
+  float yawRate           = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
   
   //convert gyros to SI units
-  rollRateRaw *= 0.00106529694631448; // rad/s
-  pitchRateRaw *= 0.00106529694631448;
-  yawRateRaw *= 0.00106529694631448;
+  rollRate  *= 0.01745329251; // rad/s
+  pitchRate *= 0.01745329251; // pi / 180
+  yawRate   *= 0.01745329251;
   
-  // correct IMU inputs for pitch/roll
-  /*
-  float rollRate = rollRateRaw * cos(pitchAngle) + yawRateRaw * sin(pitchAngle);  
-  float pitchRate = pitchRateRaw * cos(rollAngle) - yawRateRaw * sin(rollAngle);
-  float yawRate = yawRateRaw * cos(rollAngle) * cos(pitchAngle) + pitchRateRaw * sin(rollAngle) - rollRateRaw * sin(pitchAngle);
-  float longitudinalAccel = longitudinalAccelRaw * cos(pitchAngle) + verticalAccelRaw * sin(pitchAngle);
-  float lateralAccel = lateralAccelRaw * cos(rollAngle) - verticalAccelRaw * sin(rollAngle);
-  float verticalAccel = verticalAccelRaw * cos(pitchAngle) * cos(rollAngle) - longitudinalAccelRaw * sin(pitchAngle) + lateralAccelRaw * sin(rollAngle);
-  */ // Unlock above and delete below if the gyros are upgraded 
-  
-  float rollRate = rollRateRaw;  
-  float pitchRate = pitchRateRaw;
-  float yawRate = yawRateRaw;
-  float longitudinalAccel = longitudinalAccelRaw;
-  float lateralAccel = lateralAccelRaw;
-  float verticalAccel = verticalAccelRaw;
-  rollAngle += rollRate * iterationTime / 1000000;
+  // Track orientation changes
+  rollAngle  += rollRate  * iterationTime / 1000000;
   pitchAngle += pitchRate * iterationTime / 1000000;
-  // these angles are cleared at the same time as slip angle
+  // Slip angle is more complicated since the reference frame is free to rotate in the yaw direction
+  // these angles are zeroed when lateral acceleration is small
   
-  if (lcd_keyad.readButtons() == BUTTON_SELECT)
-  {
+  if (lcd_keyad.readButtons() == BUTTON_SELECT) {
     // while car is stationary, calibrate orientation and zero gyros
-    if (calibrationMode == true) 
-    {
+    if (calibrationMode == true) {
       calibrationMode = false;
-      
-      //speedCal = abs(rotationAdder / yawAdder);
       
       // display green light for "on"
       analogWrite(RED_PIN, 0);
@@ -177,7 +119,6 @@ void loop()
       lcd_keyad.print("Do not poweroff.");
       lcd_keyad.setCursor(0,0);
       
-      //EEPROM_writeFloat(SPEED_CAL_ADDR, speedCal); Restore this when speedo works
       
       lcd_keyad.clear();
       lcd_keyad.print("Cal successful.");
@@ -233,26 +174,16 @@ void loop()
         delay(2);
       }
       // save orientation to ROM and RAM
-      EEPROM_writeFloat(ORIENTATION_CAL_ADDR, x/g);
-      EEPROM_writeFloat(ORIENTATION_CAL_ADDR + 4, y/g);
-      EEPROM_writeFloat(ORIENTATION_CAL_ADDR + 8, z/g);
-      EEPROM_writeFloat(ORIENTATION_CAL_ADDR + 12, r/g);
-      zxgr = z * x / (g * r);
-      zygr = z * y / (g * r);
-      xg = x / g;
-      yg = y / g;
-      zg = z / g;
-      rg = r / g;
-      
-      // prepare rotation and yaw variables for speed calibration
-      rotationAdder = 0;
-      yawAdder = 0;
+      EEPROM_write_float(ORIENTATION_CAL_ADDR, x / g);
+      EEPROM_write_float(ORIENTATION_CAL_ADDR + 4, y / g);
+      EEPROM_write_float(ORIENTATION_CAL_ADDR + 8, z / g);
+      orientation_matrix.update(x / g, y / g, z / g);
       
       // convert gyroOffset from sum to average
       for (int j = 0; j < 3; j++)
       {
         gyroOffset[j] /= calibrationIterations;
-        EEPROM_writeFloat(ZERO_CAL_ADDR + 4 * (3 + j), gyroOffset[j]);
+        EEPROM_write_float(ZERO_CAL_ADDR + 4 * (3 + j), gyroOffset[j]);
       }
       
       // prepare to enter speed calibration mode
@@ -291,33 +222,10 @@ void loop()
     }
   }
   
-  /* Resotre this when speedo works
-  if (calibrationMode == true)
-  {
-    if ((rotationAdder + lateralAccel * speedoPeriod != rotationAdder) && (yawAdder + yawRate != yawAdder) && (speedoPeriod < 200)) 
-    {
-      rotationAdder += lateralAccel * speedoPeriod;
-      yawAdder += yawRate;
-    }
-    if (rotationAdder > 4194304) 
-    {
-      // display yellow to red light to warn user of float storage
-      analogWrite(RED_PIN, 255);
-      if (rotationAdder < 8388608) analogWrite(GREEN_PIN, 255 - (rotationAdder - 4194304) / 16450);
-      else analogWrite(GREEN_PIN, 255);
-      analogWrite(BLUE_PIN, 0);
-      lcd_keyad.clear();
-      lcd_keyad.print("WARNING: float limitation");
-      lcd_keyad.setCursor(0,1);
-      lcd_keyad.print("End calibration.");
-      lcd_keyad.setCursor(0,0);
-    }
-  }
-  */
-
-  
   time = micros();
-  if (time - previousIteration > 0) iterationTime = time - previousIteration;
+  if (time - previousIteration > 0) {
+    iterationTime = time - previousIteration;
+  }
   previousIteration = time;
   
   /*
@@ -612,11 +520,9 @@ void checkSpeedo()
       delay(32);
     }
   }
-  if (analogRead(SPEEDOMETER_PIN) > 64) // ~.3125V
-  {
-    if (speedo == false)
-    {      
-      speedo = true;
+  if (analogRead(SPEEDOMETER_PIN) > 64 /* ~0.3125V */) {
+    if (!speedo_triggered) {      
+      speedo_triggered = true;
       time = micros();
       if (time - lastTick > 0) 
         speedoPeriod = (time - lastTick) / 1000.0; // milliseconds
@@ -624,9 +530,8 @@ void checkSpeedo()
       longitudinalSpeed = /*speedCorrection **/ 877.193 / speedoPeriod; //+0.125; //approximate mph
     }
   }
-  if (analogRead(SPEEDOMETER_PIN) < 32) // ~0.15625V
-  {
-    speedo = false;
+  if (analogRead(SPEEDOMETER_PIN) < 32 /* ~0.15625V */) {
+    speedo_triggered = false;
   }
 }
 
