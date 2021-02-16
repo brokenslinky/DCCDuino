@@ -15,11 +15,11 @@ float OrientationMatrix::longitudinal(float& x, float& y, float& z) {
     return dlongdx * x + dlongdy * y + dlongdz * z;
 }
 
-float OrientationMatrix::lateral(float& x, float& y, float& z) {
+float OrientationMatrix::lateral     (float& x, float& y, float& z) {
     return dlatdx * x + dlatdy * y + dlatdz * z;
 }
 
-float OrientationMatrix::vertical(float& x, float& y, float& z) {
+float OrientationMatrix::vertical    (float& x, float& y, float& z) {
     return dvertdx * x + dvertdy * y + dvertdz * z;
 }
 
@@ -54,8 +54,8 @@ void OrientationMatrix::update(float x_0, float y_0, float z_0) {
     float g_0 = sqrt(r_0 * r_0 + z_0 * z_0);
 
     dlongdx = z_0 * x_0 / (g_0 * r_0);     dlongdy = -z_0 * y_0 / (g_0 * r_0);     dlongdz = -r_0 / g_0;
-    dlatdx  =       y_0 / r_0;             dlatdy  =        x_0 / r_0;             dlatdz  =  0;
-    dvertdx =       x_0 / g_0;             dvertdy =       -y_0 / g_0;             dvertdz =  z_0 / g_0;
+    dlatdx  = y_0 / r_0;                   dlatdy  =  x_0 / r_0;                   dlatdz  =  0;
+    dvertdx = x_0 / g_0;                   dvertdy = -y_0 / g_0;                   dvertdz =  z_0 / g_0;
 }
 
 void OrientationMatrix::update(float initial_orientation[3]) {
