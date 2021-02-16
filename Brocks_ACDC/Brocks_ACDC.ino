@@ -9,21 +9,31 @@ void setup() {
   lcd_keyad.setCursor(0,1);
   lcd_keyad.print("   Brock Palmer ");
 
-  lcdMode = 0;
-  displayMode = 0;
-  printIterationCounter = 0;
-
   pinMode(SPEEDOMETER_PIN, INPUT);
   pinMode(CALIBRATION_PIN, INPUT);
   pinMode(SLICKNESS_PIN,   INPUT);
   pinMode(RAMP_PIN,        INPUT);
-  pinMode(LED_GROUND_PIN,  INPUT);
 
+  pinMode(LED_GROUND_PIN,  OUTPUT);
   pinMode(POWER_OUT_PIN,   OUTPUT);
   pinMode(RED_PIN,         OUTPUT);
   pinMode(BLUE_PIN,        OUTPUT);
   pinMode(GREEN_PIN,       OUTPUT);
+
+  // Change PWM frequency of POWER_OUT_PIN
+  // Pin 9 should be on TCA0-WO0
+  // TODO: Confirm this works
+  // TCA0.SINGLE.CTRLA = (TCA0.SINGLE.CTRLA & 0xF1) | (0x4 << 1);
+  TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV16_gc; // "| 0x1 might be needed to enable."
+  // Default frequency is 976 Hz
+  // 1/8 of this should be 122 Hz
+  // I think 0x1 is already used. This is a divisor of 4, so I want a divisor of 32.
+  // See https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega4808-09-DataSheet-DS40002173B.pdf 
   
+  lcdMode = 0;
+  displayMode = 0;
+  printIterationCounter = 0;
+
   // Initialize working variables
   speedoPeriod = 100.0; // 0.1 coresponds to ~100 mph. 100.0 coresponds to ~0.1 mph
   rollAngle    = 0.0;
@@ -245,7 +255,7 @@ void read_buttons() {
       } else {
         lcdMode++;
       }
-      if (lcdMode == LcdMode::STATS) {
+      if        (lcdMode == LcdMode::STATS) {
         lcd_keyad.clear();
         lcd_keyad.print("Status");
         delay(2000);
@@ -266,7 +276,7 @@ void read_buttons() {
       } else {
         lcdMode--;
       }
-      if (lcdMode == LcdMode::STATS) {
+      if        (lcdMode == LcdMode::STATS) {
         lcd_keyad.clear();
         lcd_keyad.print("Status");
         delay(2000);
