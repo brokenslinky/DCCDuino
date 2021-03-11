@@ -1,3 +1,5 @@
+#include "math.h"
+
 // Structure for translating sensor coordinates into vehicle coordinates
 struct OrientationMatrix
 {

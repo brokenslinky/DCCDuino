@@ -1,5 +1,4 @@
 #include "Orientation_Matrix.h"
-#include "math.h"
 
 OrientationMatrix::OrientationMatrix() {
     dlongdx = 0, dlongdy = 0, dlongdz = 0;

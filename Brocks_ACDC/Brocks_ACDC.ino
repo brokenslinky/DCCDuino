@@ -4,10 +4,8 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   
-  lcd_keyad.begin(16, 2);
-  lcd_keyad.print("ACDC-duino by   ");
-  lcd_keyad.setCursor(0,1);
-  lcd_keyad.print("   Brock Palmer ");
+  lcd_print("ACDCduino by    ",
+            "   Brock Palmer ");
 
   pinMode(SPEEDOMETER_PIN, INPUT);
   pinMode(CALIBRATION_PIN, INPUT);
@@ -32,7 +30,6 @@ void setup() {
   
   lcdMode = 0;
   displayMode = 0;
-  printIterationCounter = 0;
 
   // Initialize working variables
   speedoPeriod = 100.0; // 0.1 coresponds to ~100 mph. 100.0 coresponds to ~0.1 mph
@@ -89,12 +86,12 @@ void loop() {
   float z_rot = (unadjusted_rotation[2] - accelZero[2]) * accelScale[2];
 
   // Convert from sensor coordinates to vehicle coordinates.
-  float longitudinalAccel = orientation_matrix.longitudinal(x, y, z);
-  float lateralAccel      = orientation_matrix.lateral     (x, y, z);
-  float verticalAccel     = orientation_matrix.vertical    (x, y, z);
-  float rollRate          = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
-  float pitchRate         = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
-  float yawRate           = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
+  longitudinalAccel = orientation_matrix.longitudinal(x, y, z);
+  lateralAccel      = orientation_matrix.lateral     (x, y, z);
+  verticalAccel     = orientation_matrix.vertical    (x, y, z);
+  rollRate          = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
+  pitchRate         = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
+  yawRate           = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
   
   //convert gyros to SI units
   rollRate  *= 0.01745329251; // rad/s
@@ -121,7 +118,7 @@ void loop() {
   }
   
   // Check user input
-  if (lcd_keyad.readButtons() == BUTTON_SELECT) {
+  if (lcd_keypad.readButtons() == BUTTON_SELECT) {
     perform_calibration();
   }
   
@@ -131,7 +128,7 @@ void loop() {
   rampRate = 1.0 / ( 3.0 - 0.25 * getRotaryKey(analogRead(RAMP_PIN)));
   
   // determine lockup amount (127 = 50% duty cycle MAX)
-  int lockup = 0;
+  lockup = 0;
   if (rampRate == 0) {
     lockup = 127.0 * getRotaryKey(analogRead(SLICKNESS_PIN)) / NUM_KEYS; // manual mode if rampRate set to zero
   } else {
@@ -151,145 +148,23 @@ void loop() {
   // send PWM signal to power shield
   analogWrite(POWER_OUT_PIN, lockup);
 
-  // LED changes from green to red and becomes brighter as the diff locks.
-  led_light(2 * lockup, 127 - lockup, 0);
-  led_light(2 * lockup, 127 - lockup, 75 - lockup / 2.0);
-  
-  // print to LCD
-  printIterationCounter++;
-  if (printIterationCounter > iterationsBetweenPrints) {
-    printIterationCounter = 0;
-    lcd_keyad.clear();
-    switch (lcdMode) {
-      case LcdMode::STATS:
-        if (displayMode == 0) {
-          lcd_keyad.print("Center diff lock:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print((float)lockup * 100.0 / 127.0);
-          lcd_keyad.print(" %");
-        } else if (displayMode == 1) {
-          float horizontalAccel = sqrt(longitudinalAccel * longitudinalAccel + lateralAccel * lateralAccel);
-          lcd_keyad.print("Hoizontal Accel:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(horizontalAccel / verticalAccel);
-          lcd_keyad.print(" g");
-        } else if (displayMode == 2) {
-          lcd_keyad.print("Roll Angle:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(rollAngle * 180.0 / PI);
-          lcd_keyad.print(" degrees");
-        } else if (displayMode == 3) {
-          lcd_keyad.print("Pitch Angle:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(pitchAngle * 180.0 / PI);
-          lcd_keyad.print(" degrees");
-        } else if (displayMode > 3) {
-          displayMode = 0;
-        } else if (displayMode < 0) {
-          displayMode = 3;
-        }
-        break;
+  // LED changes from cyan to red and becomes brighter as the diff locks.
+  led_light(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
 
-      case LcdMode::INPUTS:
-        if (displayMode == 0) {
-          lcd_keyad.print("Longitudinal Acc:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(longitudinalAccel / verticalAccel);
-          lcd_keyad.print(" g");
-        } else if (displayMode == 1) {
-          lcd_keyad.print("Lateral Accel:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(lateralAccel / verticalAccel);
-          lcd_keyad.print(" g");
-        } else if (displayMode == 2) {
-          lcd_keyad.print("Yaw Rate:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(yawRate * 180.0 / PI);
-          lcd_keyad.print(" deg/s");
-        } else if (displayMode == 3) {
-          lcd_keyad.print("Roll Rate:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(rollRate * 180.0 / PI);
-          lcd_keyad.print(" deg/s");
-        } else if (displayMode == 4) {
-          lcd_keyad.print("Pitch Rate:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(pitchRate * 180.0 / PI);
-          lcd_keyad.print(" deg/s");
-        } else if (displayMode == 5) {
-          lcd_keyad.print("Gravity:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(verticalAccel / 256.0);
-          lcd_keyad.print(" g");
-        } else if (displayMode == 6) {
-          lcd_keyad.print("Speed:");
-          lcd_keyad.setCursor(0,1);
-          lcd_keyad.print(longitudinalSpeed);
-          lcd_keyad.print(" mph");
-        } else if (displayMode > 6) {
-          displayMode = 0;
-        } else if (displayMode < 0) {
-          displayMode = 6;
-        };
-    }
-  }
-
+  update_display(
+        lockup,
+        longitudinalAccel,
+        lateralAccel,
+        verticalAccel,
+        rollRate,
+        pitchRate,
+        yawRate,
+        longitudinalSpeed,
+        rollAngle,
+        pitchAngle,
+        rampRate
+        );
   read_buttons();
-}
-
-void read_buttons() {
-  uint8_t button = lcd_keyad.readButtons();
-  switch (button) {
-    case 0x00:
-      break;
-    case BUTTON_RIGHT:
-      displayMode++;
-      delay(200);
-    case BUTTON_LEFT:
-      displayMode--;
-      delay(200);
-    case BUTTON_DOWN:
-      displayMode = 0;
-      if (lcdMode == LcdMode::ENUM_END - 1) {
-        lcdMode = 0;
-      } else {
-        lcdMode++;
-      }
-      if        (lcdMode == LcdMode::STATS) {
-        lcd_keyad.clear();
-        lcd_keyad.print("Status");
-        delay(2000);
-      } else if (lcdMode == LcdMode::INPUTS) {
-        lcd_keyad.clear();
-        lcd_keyad.print("Inputs");
-        delay(2000);
-      } else if (lcdMode == LcdMode::ERRORS) {
-        lcd_keyad.clear();
-        lcd_keyad.print("Errors");
-        delay(2000);
-      }
-
-    case BUTTON_UP:
-      displayMode = 0;
-      if (lcdMode == 0) {
-        lcdMode = LcdMode::ENUM_END - 1;
-      } else {
-        lcdMode--;
-      }
-      if        (lcdMode == LcdMode::STATS) {
-        lcd_keyad.clear();
-        lcd_keyad.print("Status");
-        delay(2000);
-      } else if (lcdMode == LcdMode::INPUTS) {
-        lcd_keyad.clear();
-        lcd_keyad.print("Inputs");
-        delay(2000);
-      } else if (lcdMode == LcdMode::ERRORS) {
-        lcd_keyad.clear();
-        lcd_keyad.print("Errors");
-        delay(2000);
-      }
-  }
 }
 
 void checkSpeedo() {

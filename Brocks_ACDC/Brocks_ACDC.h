@@ -6,12 +6,12 @@
 // This LCD Keypad - https://www.adafruit.com/product/716
 // Some hokey rotary switches I picked up years ago
 
-#include <Arduino_LSM6DS3.h> // Internal IMU on the Uno WiFi Rev2
-#include <Adafruit_RGBLCDShield.h>
+#include <Arduino_LSM6DS3.h>    // Internal IMU on the Uno WiFi Rev2
 
 #include "Storage.h"
 #include "Orientation_Matrix.h"
-#include "Rotary_Keys.h"     // Maps analog input to a switch position
+#include "Rotary_Keys.h"        // Maps analog input to a switch position
+#include "User_Interface.h"
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A5
@@ -24,18 +24,8 @@
 #define RED_PIN         49
 #define LED_GROUND_PIN  51
 
-enum LcdMode
-{
-	STATS = 0,
-	INPUTS,
-	ERRORS,
-	ENUM_END
-};
-
 // Settings
 const uint16_t calibrationIterations   = 512;
-const uint16_t iterationsBetweenPrints = 2;
-
 
 // Set the RGB LED
 void led_light(uint8_t red, uint8_t green, uint8_t blue) {
@@ -44,22 +34,17 @@ void led_light(uint8_t red, uint8_t green, uint8_t blue) {
   analogWrite(BLUE_PIN,  blue);
 }
 
-// LCD display and keypad
-Adafruit_RGBLCDShield lcd_keyad;
-uint8_t lcdMode;
-uint8_t displayMode;
-uint16_t printIterationCounter;
-
 // Structure for working with orientation corrections.
 OrientationMatrix orientation_matrix;
 
-void lcd_print(const char* line_1 = "", const char* line_2 = "") {
-	lcd_keyad.clear();
-	lcd_keyad.setCursor(0, 0);
-	lcd_keyad.print(line_1);
-	lcd_keyad.setCursor(0, 1);
-	lcd_keyad.print(line_2);
-}
+// Working varibales
+static int   lockup            = 0;
+static float longitudinalAccel = 0.0;
+static float lateralAccel      = 0.0;
+static float verticalAccel     = 0.0;
+static float rollRate          = 0.0;
+static float pitchRate         = 0.0;
+static float yawRate           = 0.0;
 
 // Sensor readings
 float unadjusted_accel[3];
