@@ -1,6 +1,6 @@
 #include "Display.h"
 
-void Display::setup() {
+void Display::init() {
     pinMode(RED_PIN,         OUTPUT);
     pinMode(BLUE_PIN,        OUTPUT);
     pinMode(GREEN_PIN,       OUTPUT);
@@ -18,7 +18,7 @@ void Display::print(String line_1, String line_2) {
     lcd_keypad.print(line_2.c_str());
 }
 
-void Display::rgb_light(uint8_t red, uint8_t green, uint8_t blue) {
+void Display::set_rgb(uint8_t red, uint8_t green, uint8_t blue) {
     analogWrite(RED_PIN,   red);
     analogWrite(GREEN_PIN, green);
     analogWrite(BLUE_PIN,  blue);
@@ -67,24 +67,24 @@ void Display::update(
             if (!longitudinal_sensitivity) {
                 // Manual mode accessed by turning longitudinal sensitivity to zero.
                 return print("Manual Mode Lock",
-                                String(100.0 * (float)lateral_sensitivity / 15.0) + " %");
+                    String(100.0 * (float)lateral_sensitivity / 15.0) + " %");
             }
             return print("Longitudinal: " + longitudinal_sensitivity,
-                            "Lateral:      " + lateral_sensitivity);
+                         "Lateral:      " + lateral_sensitivity);
         case DisplayMode::STATS:
             switch(subscreen) {
                 case 0:
                     return print("Center Diff Lock",
-                                    String((float)lockup * 100.0 / 127.0) + " %");
+                        String((float)lockup * 100.0 / 127.0) + " %");
                 case 1:
                     return print("Horizontal Accel",
-                                    String(horizontalAccel / verticalAccel) + " g");
+                        String(horizontalAccel / verticalAccel) + " g");
                 case 2:
                     return print("Roll Angle:     ",
-                                    String(rollAngle * 180.0 / PI) + " degrees");
+                        String(rollAngle * 180.0 / PI) + " degrees");
                 case 3:
                     return print("Pitch Angle:    ",
-                                    String(pitchAngle * 180.0 / PI) + " degrees");
+                        String(pitchAngle * 180.0 / PI) + " degrees");
                 case 4:
                     subscreen = 0;
                     return;
@@ -97,25 +97,25 @@ void Display::update(
             switch (subscreen) {
                 case 0:
                     return print("Longitudinal Acc",
-                                    String(longitudinalAccel / verticalAccel) + " g");
+                        String(longitudinalAccel / verticalAccel) + " g");
                 case 1:
                     return print("Lateral Accel:  ",
-                                    String(lateralAccel / verticalAccel) + " g");
+                        String(lateralAccel / verticalAccel) + " g");
                 case 2:
                     return print("Yaw Rate:       ",
-                                    String(yawRate * 180.0 / PI) + " deg/s");
+                        String(yawRate * 180.0 / PI) + " deg/s");
                 case 3:
                     return print("Roll Rate:      ",
-                                    String(rollRate * 180.0 / PI) + " deg/s");
+                        String(rollRate * 180.0 / PI) + " deg/s");
                 case 4:
                     return print("Pitch Rate:     ",
-                                    String(pitchRate * 180.0 / PI) + " deg/s");
+                        String(pitchRate * 180.0 / PI) + " deg/s");
                 case 5:
                     return print("Gravity:        ",
-                                    String(verticalAccel / 256.0) + " g");
+                        String(verticalAccel / 256.0) + " g");
                 case 6:
                     return print("Speed:          ",
-                                    String(longitudinalSpeed) + " mph");
+                        String(longitudinalSpeed) + " mph");
                 case 7:
                     subscreen = 0;
                     return;

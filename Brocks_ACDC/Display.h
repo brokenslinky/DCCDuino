@@ -33,13 +33,13 @@ struct Display
     ~Display() {};
 
     /** Initialize the display **/
-    void setup();
+    void init();
 
     /** Print to the display. Limit 2 lines, 16 characters per line. **/
     void print(String line_1 = "", String line_2 = "");
 
     /** Set the RGB LED **/
-    void rgb_light(uint8_t red, uint8_t green, uint8_t blue);
+    void set_rgb(uint8_t red, uint8_t green, uint8_t blue);
 
     /** Display the name of the current display mode **/
     void show_mode();

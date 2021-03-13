@@ -3,12 +3,12 @@
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  setup_UI();
+  init_UI();
 
   display.print("ACDCduino by    ",
                 "   Brock Palmer ");
   // Orange light
-  display.rgb_light(255, 125, 0);
+  display.set_rgb(255, 125, 0);
 
   pinMode(SPEEDOMETER_PIN, INPUT);
   pinMode(POWER_OUT_PIN,   OUTPUT);
@@ -57,7 +57,7 @@ void setup() {
   delay(USER_READ_TIME_MILLIS);
 
   // Display blue light to indicate readiness
-  display.rgb_light(0, 0, 255);
+  display.set_rgb(0, 0, 255);
   display.print("Ready to race.  ");
 }
 
@@ -134,7 +134,7 @@ void loop() {
   analogWrite(POWER_OUT_PIN, lockup);
 
   // LED changes from cyan to red and becomes brighter as the diff locks.
-  display.rgb_light(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
+  display.set_rgb(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
 
   display.update(
         lockup,
@@ -189,7 +189,7 @@ void perform_calibration() {
 
   for (int i = 0; i < calibrationIterations; i++) {
     // Display orange light for wait
-    display.rgb_light(255, 150, 0);
+    display.set_rgb(255, 150, 0);
     
     // Determine direction of gravity
     IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
@@ -226,5 +226,5 @@ void perform_calibration() {
 
   display.print("  Calibration   ",
                 "   Complete     ");
-  display.rgb_light(0, 255, 0); // green light
+  display.set_rgb(0, 255, 0); // green light
 }

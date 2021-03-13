@@ -15,14 +15,16 @@ bool adjusting   = false;
 uint8_t longitudinal_sensitivity = 0;
 uint8_t lateral_sensitivity      = 0;
 
-void setup_UI() {
-  display.setup();
+/** Initialize **/
+void init_UI() {
+  display.init();
   calibrating              = false;
   adjusting                = false;
   longitudinal_sensitivity = 0;
   lateral_sensitivity      = 0;
 }
 
+/** Adjust the sensitivity configurations based on the provided button input. **/
 void adjust(uint8_t button) {
   switch (button) {
     case BUTTON_UP:
