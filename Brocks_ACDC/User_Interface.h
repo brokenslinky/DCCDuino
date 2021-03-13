@@ -1,5 +1,7 @@
 #include "Display.h"
 
+bool calibrating = false;
+
 void read_buttons() {
   uint8_t button = lcd_keypad.readButtons();
   switch (button) {

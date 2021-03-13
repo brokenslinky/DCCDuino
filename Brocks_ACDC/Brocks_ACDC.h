@@ -27,6 +27,12 @@
 // Settings
 const uint16_t calibrationIterations   = 512;
 
+// Stored in ROM
+// These will be stored as 4 bits each and share 1 byte.
+// Maximum value = 15
+uint8_t longitudinal_sensitivity = 0;
+uint8_t lateral_sensitivity      = 0;
+
 // Set the RGB LED
 void led_light(uint8_t red, uint8_t green, uint8_t blue) {
   analogWrite(RED_PIN,   red);
@@ -61,6 +67,7 @@ float speedoPeriod;
 float longitudinalSpeed;
 float rollAngle;
 float pitchAngle;
+float friction;
 float rampRate;
 
 // All of this crap is for a speed calibration.

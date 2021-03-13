@@ -123,7 +123,7 @@ void loop() {
   }
   
   // read the aggression and slip dials
-  float friction = 2.4 - 0.2 * getRotaryKey(analogRead(SLICKNESS_PIN));
+  friction = 2.4 - 0.2 * getRotaryKey(analogRead(SLICKNESS_PIN));
   //float desiredSlip = 0.0872664626 * getRotaryKey(analogRead(RAMP_PIN)); // 5 degrees per position
   rampRate = 1.0 / ( 3.0 - 0.25 * getRotaryKey(analogRead(RAMP_PIN)));
   
@@ -162,6 +162,7 @@ void loop() {
         longitudinalSpeed,
         rollAngle,
         pitchAngle,
+        friction,
         rampRate
         );
   read_buttons();
