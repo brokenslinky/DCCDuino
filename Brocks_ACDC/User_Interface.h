@@ -3,6 +3,8 @@
 
 #define ANTI_BOUNCE_MILLIS 100
 
+Display display;
+
 bool calibrating = false;
 bool adjusting   = false;
 
@@ -12,6 +14,14 @@ bool adjusting   = false;
 // Maximum value = 15
 uint8_t longitudinal_sensitivity = 0;
 uint8_t lateral_sensitivity      = 0;
+
+void setup_UI() {
+  display.setup();
+  calibrating              = false;
+  adjusting                = false;
+  longitudinal_sensitivity = 0;
+  lateral_sensitivity      = 0;
+}
 
 void adjust(uint8_t button) {
   switch (button) {
@@ -38,8 +48,8 @@ void adjust(uint8_t button) {
     case BUTTON_SELECT:
       adjusting = false;
       EEPROM_write_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
-      lcd_print("Configuration   ",
-                "saved to EEPROM.");
+      display.print("Configuration   ",
+                    "saved to EEPROM.");
       return delay(USER_READ_TIME_MILLIS);
   }
   delay(ANTI_BOUNCE_MILLIS);
@@ -50,7 +60,7 @@ void adjust(uint8_t button) {
  * ToDo: This would be better as an interupt.
  **/
 void check_user_input() {
-  uint8_t button = lcd_keypad.readButtons();
+  uint8_t button = display.lcd_keypad.readButtons();
   if (!button) {
     return;
   }
@@ -60,34 +70,34 @@ void check_user_input() {
   }
 
   // Special behavior for directional buttons on the config screen
-  if (lcdMode == LcdMode::CONFIGS && button != BUTTON_SELECT) {
+  if (display.mode == DisplayMode::CONFIGS && button != BUTTON_SELECT) {
     adjusting = true;
     return adjust(button);
   }
 
   switch (button) {
     case BUTTON_RIGHT:
-      displayMode++;
+      display.subscreen++;
       return delay(ANTI_BOUNCE_MILLIS);
     case BUTTON_LEFT:
-      displayMode--;
+      display.subscreen--;
       return delay(ANTI_BOUNCE_MILLIS);
     case BUTTON_DOWN:
     case BUTTON_SELECT:
-      displayMode = 0;
-      if (lcdMode == LcdMode::ENUM_END - 1) {
-        lcdMode = 0;
+      display.subscreen = 0;
+      if (display.mode == DisplayMode::ENUM_END - 1) {
+        display.mode = 0;
       } else {
-        lcdMode++;
+        display.mode++;
       }
-      return show_mode();
+      return display.show_mode();
     case BUTTON_UP:
-      displayMode = 0;
-      if (lcdMode == 0) {
-        lcdMode = LcdMode::ENUM_END - 1;
+      display.subscreen = 0;
+      if (display.mode == 0) {
+        display.mode = DisplayMode::ENUM_END - 1;
       } else {
-        lcdMode--;
+        display.mode--;
       }
-      return show_mode();
+      return display.show_mode();
   }
 }

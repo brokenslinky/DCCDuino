@@ -11,7 +11,7 @@
 #define GREEN_PIN 5
 #define BLUE_PIN  6
 
-enum LcdMode
+enum DisplayMode
 {
     CONFIGS = 0,
     STATS,
@@ -20,133 +20,43 @@ enum LcdMode
     ENUM_END
 };
 
-// LCD display and keypad
-Adafruit_RGBLCDShield lcd_keypad;
-uint8_t               lcdMode;
-uint8_t               displayMode;
-uint16_t              printIterationCounter;
+struct Display
+{
+    // LCD display and keypad
+    Adafruit_RGBLCDShield lcd_keypad;
 
-void display_setup() {
-    pinMode(RED_PIN,         OUTPUT);
-    pinMode(BLUE_PIN,        OUTPUT);
-    pinMode(GREEN_PIN,       OUTPUT);
-    
-    lcdMode               = 0;
-    displayMode           = 0;
-    printIterationCounter = 0;
-}
+    uint8_t               mode;
+    uint8_t               subscreen;
+    uint16_t              printIterationCounter;
 
-void lcd_print(String line_1 = "", String line_2 = "") {
-	lcd_keypad.clear();
-	lcd_keypad.setCursor(0, 0);
-	lcd_keypad.print(line_1.c_str());
-	lcd_keypad.setCursor(0, 1);
-	lcd_keypad.print(line_2.c_str());
-}
+    Display() {};
+    ~Display() {};
 
-// Set the RGB LED
-void rgb_light(uint8_t red, uint8_t green, uint8_t blue) {
-  analogWrite(RED_PIN,   red);
-  analogWrite(GREEN_PIN, green);
-  analogWrite(BLUE_PIN,  blue);
-}
+    /** Initialize the display **/
+    void setup();
 
-void show_mode() {
-    if (lcdMode== LcdMode::CONFIGS) {
-        lcd_print("Configuration   ");
-    } else if (lcdMode == LcdMode::STATS) {
-        lcd_print("Status          ");
-    } else if (lcdMode == LcdMode::INPUTS) {
-        lcd_print("Inputs          ");       
-    } else if (lcdMode == LcdMode::ERRORS) {
-        lcd_print("Errors          ");
-    }
-    delay(USER_READ_TIME_MILLIS); // Give the user time to read.
-}
+    /** Print to the display. Limit 2 lines, 16 characters per line. **/
+    void print(String line_1 = "", String line_2 = "");
 
-void update_display(
-        int   lockup,
-        float longitudinalAccel,
-        float lateralAccel,
-        float verticalAccel,
-        float rollRate,
-        float pitchRate,
-        float yawRate,
-        float longitudinalSpeed,
-        float rollAngle,
-        float pitchAngle,
-        uint8_t longitudinal_sensitivity,
-        uint8_t lateral_sensitivity
-        ) {
-    // print to LCD
-    printIterationCounter++;
-    if (printIterationCounter < ITERATIONS_BETWEEN_PRINTS) {
-        return;
-    }
-    printIterationCounter = 0;
+    /** Set the RGB LED **/
+    void rgb_light(uint8_t red, uint8_t green, uint8_t blue);
 
-    float horizontalAccel = sqrt(longitudinalAccel * longitudinalAccel + lateralAccel * lateralAccel);
+    /** Display the name of the current display mode **/
+    void show_mode();
 
-    switch (lcdMode) {
-        case LcdMode::CONFIGS:
-            if (!longitudinal_sensitivity) {
-                // Manual mode accessed by turning longitudinal sensitivity to zero.
-                return lcd_print("Manual Mode Lock",
-                                 String(100.0 * (float)lateral_sensitivity / 15.0) + " %");
-            }
-            return lcd_print("Longitudinal: " + longitudinal_sensitivity,
-                             "Lateral:      " + lateral_sensitivity);
-        case LcdMode::STATS:
-            switch(displayMode) {
-                case 0:
-                    return lcd_print("Center Diff Lock",
-                                    String((float)lockup * 100.0 / 127.0) + " %");
-                case 1:
-                    return lcd_print("Horizontal Accel",
-                                    String(horizontalAccel / verticalAccel) + " g");
-                case 2:
-                    return lcd_print("Roll Angle:     ",
-                                    String(rollAngle * 180.0 / PI) + " degrees");
-                case 3:
-                    return lcd_print("Pitch Angle:    ",
-                                    String(pitchAngle * 180.0 / PI) + " degrees");
-                case 4:
-                    displayMode = 0;
-                    return;
-                default:
-                    displayMode = 3;
-                    return;
-            }
-
-        case LcdMode::INPUTS:
-            switch (displayMode) {
-                case 0:
-                    return lcd_print("Longitudinal Acc",
-                                     String(longitudinalAccel / verticalAccel) + " g");
-                case 1:
-                    return lcd_print("Lateral Accel:  ",
-                                     String(lateralAccel / verticalAccel) + " g");
-                case 2:
-                    return lcd_print("Yaw Rate:       ",
-                                     String(yawRate * 180.0 / PI) + " deg/s");
-                case 3:
-                    return lcd_print("Roll Rate:      ",
-                                     String(rollRate * 180.0 / PI) + " deg/s");
-                case 4:
-                    return lcd_print("Pitch Rate:     ",
-                                     String(pitchRate * 180.0 / PI) + " deg/s");
-                case 5:
-                    return lcd_print("Gravity:        ",
-                                     String(verticalAccel / 256.0) + " g");
-                case 6:
-                    return lcd_print("Speed:          ",
-                                     String(longitudinalSpeed) + " mph");
-                case 7:
-                    displayMode = 0;
-                    return;
-                default:
-                    displayMode = 6;
-                    return;
-            }
-    }
-}
+    /** Update the display based on the provided state **/
+    void update(
+            int   lockup,
+            float longitudinalAccel,
+            float lateralAccel,
+            float verticalAccel,
+            float rollRate,
+            float pitchRate,
+            float yawRate,
+            float longitudinalSpeed,
+            float rollAngle,
+            float pitchAngle,
+            uint8_t longitudinal_sensitivity,
+            uint8_t lateral_sensitivity
+            );
+};

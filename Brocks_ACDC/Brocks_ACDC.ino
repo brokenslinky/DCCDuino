@@ -3,12 +3,12 @@
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  display_setup();
+  setup_UI();
 
-  lcd_print("ACDCduino by    ",
-            "   Brock Palmer ");
+  display.print("ACDCduino by    ",
+                "   Brock Palmer ");
   // Orange light
-  rgb_light(255, 125, 0);
+  display.rgb_light(255, 125, 0);
 
   pinMode(SPEEDOMETER_PIN, INPUT);
   pinMode(POWER_OUT_PIN,   OUTPUT);
@@ -42,7 +42,8 @@ void setup() {
   // This estimates no yaw offset, 60 degree pitch, no roll, perfect zero balance and scale
 
   // Pull calibration data and configuration from EEPROM
-  lcd_print("Getting cal data", "from EEPROM...  ");
+  display.print("Getting cal data", 
+                "from EEPROM...  ");
   EEPROM_read_vector(ZERO_CAL_ADDR,        accelZero);
   EEPROM_read_vector(ZERO_CAL_ADDR + 3*4,  gyroOffset);
   EEPROM_read_vector(SCALE_CAL_ADDR,       accelScale);
@@ -56,8 +57,8 @@ void setup() {
   delay(USER_READ_TIME_MILLIS);
 
   // Display blue light to indicate readiness
-  rgb_light(0, 0, 255);
-  lcd_print("Ready to race.  ");
+  display.rgb_light(0, 0, 255);
+  display.print("Ready to race.  ");
 }
 
 void loop() {
@@ -133,9 +134,9 @@ void loop() {
   analogWrite(POWER_OUT_PIN, lockup);
 
   // LED changes from cyan to red and becomes brighter as the diff locks.
-  rgb_light(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
+  display.rgb_light(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
 
-  update_display(
+  display.update(
         lockup,
         longitudinalAccel,
         lateralAccel,
@@ -183,12 +184,12 @@ void perform_calibration() {
   }
   float tmp[3];
 
-  lcd_print("  Measuring     ", 
-            "  Orientation   ");
+  display.print("  Measuring     ", 
+                "  Orientation   ");
 
   for (int i = 0; i < calibrationIterations; i++) {
     // Display orange light for wait
-    rgb_light(255, 150, 0);
+    display.rgb_light(255, 150, 0);
     
     // Determine direction of gravity
     IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
@@ -223,7 +224,7 @@ void perform_calibration() {
   }
   EEPROM_write_vector(ZERO_CAL_ADDR + 4*3, gyroOffset);
 
-  lcd_print("  Calibration   ",
-            "   Complete     ");
-  rgb_light(0, 255, 0); // green light
+  display.print("  Calibration   ",
+                "   Complete     ");
+  display.rgb_light(0, 255, 0); // green light
 }
