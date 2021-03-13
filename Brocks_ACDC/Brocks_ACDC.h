@@ -4,13 +4,11 @@
 // Planning to use 
 // ARDUINO UNO WIFI REV2 
 // This LCD Keypad - https://www.adafruit.com/product/716
-// Some hokey rotary switches I picked up years ago
 
 #include <Arduino_LSM6DS3.h>    // Internal IMU on the Uno WiFi Rev2
 
 #include "Storage.h"
 #include "Orientation_Matrix.h"
-#include "Rotary_Keys.h"        // Maps analog input to a switch position
 #include "User_Interface.h"
 
 // Pin Assignments
@@ -26,12 +24,6 @@
 
 // Settings
 const uint16_t calibrationIterations   = 512;
-
-// Stored in ROM
-// These will be stored as 4 bits each and share 1 byte.
-// Maximum value = 15
-uint8_t longitudinal_sensitivity = 0;
-uint8_t lateral_sensitivity      = 0;
 
 // Set the RGB LED
 void led_light(uint8_t red, uint8_t green, uint8_t blue) {

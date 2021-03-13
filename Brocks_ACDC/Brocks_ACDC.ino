@@ -54,12 +54,13 @@ void setup() {
   // }
   // This estimates no yaw offset, 60 degree pitch, no roll, perfect zero balance and scale
 
-  // Pull calibration data from EEPROM
+  // Pull calibration data and configuration from EEPROM
   lcd_print("Getting cal data", "from EEPROM...  ");
   EEPROM_read_vector(ZERO_CAL_ADDR,        accelZero);
   EEPROM_read_vector(ZERO_CAL_ADDR + 3*4,  gyroOffset);
   EEPROM_read_vector(SCALE_CAL_ADDR,       accelScale);
   EEPROM_read_vector(ORIENTATION_CAL_ADDR, orientationCal);
+  EEPROM_read_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
 
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);
@@ -122,16 +123,13 @@ void loop() {
     perform_calibration();
   }
   
-  // read the aggression and slip dials
-  friction = 2.4 - 0.2 * getRotaryKey(analogRead(SLICKNESS_PIN));
-  //float desiredSlip = 0.0872664626 * getRotaryKey(analogRead(RAMP_PIN)); // 5 degrees per position
-  rampRate = 1.0 / ( 3.0 - 0.25 * getRotaryKey(analogRead(RAMP_PIN)));
-  
   // determine lockup amount (127 = 50% duty cycle MAX)
-  lockup = 0;
-  if (rampRate == 0) {
-    lockup = 127.0 * getRotaryKey(analogRead(SLICKNESS_PIN)) / NUM_KEYS; // manual mode if rampRate set to zero
+  if (!longitudinal_sensitivity) {
+    // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
+    lockup = 127.0 * lateral_sensitivity / 15; // manual mode if rampRate set to zero
   } else {
+    friction = 1.5 - 0.1 * (float)longitudinal_sensitivity;
+    rampRate = 1.0 / ( 3.01 - 0.2 * (float)lateral_sensitivity);
     float lock_from_acceleration = 1.625 * (longitudinalAccel * cos(slip) - abs(lateralAccel) * sin(slip)) / ( friction * verticalAccel) - 1;
     float lock_from_yaw_rate     = rampRate * 0.04559 * abs(yawRate) * longitudinalSpeed / 
                                    (abs(lateralAccel) * cos(slip) * cos(slip) + longitudinalAccel * cos(slip) * sin(slip));
