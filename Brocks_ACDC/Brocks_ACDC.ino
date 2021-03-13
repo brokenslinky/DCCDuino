@@ -10,10 +10,10 @@ void setup() {
   // Orange light
   display.set_rgb(255, 125, 0);
 
-  pinMode(SPEEDOMETER_PIN, INPUT);
-  pinMode(POWER_OUT_PIN,   OUTPUT);
+  pinMode(SPEEDOMETER_PIN,  INPUT);
+  pinMode(DIFF_LOCK_PIN,    OUTPUT);
 
-  // Change PWM frequency of POWER_OUT_PIN
+  // Change PWM frequency of DIFF_LOCK_PIN
   // Pin 9 should be on TCA0-WO0
   // TODO: Confirm this works
   // TCA0.SINGLE.CTRLA = (TCA0.SINGLE.CTRLA & 0xF1) | (0x4 << 1);
@@ -131,7 +131,7 @@ void loop() {
   }
   
   // send PWM signal to power shield
-  analogWrite(POWER_OUT_PIN, lockup);
+  analogWrite(DIFF_LOCK_PIN, lockup);
 
   // LED changes from cyan to red and becomes brighter as the diff locks.
   display.set_rgb(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);

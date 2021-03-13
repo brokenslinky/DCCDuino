@@ -13,7 +13,7 @@
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A5
-#define POWER_OUT_PIN   45
+#define DIFF_LOCK_PIN   9
 
 // Settings
 const uint16_t calibrationIterations   = 512;
