@@ -13,24 +13,10 @@
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A5
-#define CALIBRATION_PIN A3
 #define POWER_OUT_PIN   45
-#define SLICKNESS_PIN   A1
-#define RAMP_PIN        A2
-#define BLUE_PIN        3
-#define GREEN_PIN       47
-#define RED_PIN         49
-#define LED_GROUND_PIN  51
 
 // Settings
 const uint16_t calibrationIterations   = 512;
-
-// Set the RGB LED
-void led_light(uint8_t red, uint8_t green, uint8_t blue) {
-  analogWrite(RED_PIN,   red);
-  analogWrite(GREEN_PIN, green);
-  analogWrite(BLUE_PIN,  blue);
-}
 
 // Structure for working with orientation corrections.
 OrientationMatrix orientation_matrix;

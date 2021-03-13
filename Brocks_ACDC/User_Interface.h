@@ -45,7 +45,11 @@ void adjust(uint8_t button) {
   delay(ANTI_BOUNCE_MILLIS);
 }
 
-void read_buttons() {
+/** 
+ * Check if any of the buttons are pressed.
+ * ToDo: This would be better as an interupt.
+ **/
+void check_user_input() {
   uint8_t button = lcd_keypad.readButtons();
   if (!button) {
     return;

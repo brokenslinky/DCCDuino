@@ -3,7 +3,13 @@
 #include <Arduino.h>
 #include <string.h>
 
-#define USER_READ_TIME_MILLIS 1500
+#define USER_READ_TIME_MILLIS  1500
+#define ITERATIONS_BETWEEN_PRINTS 2
+
+// Pins for RGB light
+#define RED_PIN   3
+#define GREEN_PIN 5
+#define BLUE_PIN  6
 
 enum LcdMode
 {
@@ -14,13 +20,21 @@ enum LcdMode
     ENUM_END
 };
 
-const uint16_t iterationsBetweenPrints = 2;
-
 // LCD display and keypad
 Adafruit_RGBLCDShield lcd_keypad;
-uint8_t lcdMode;
-uint8_t displayMode;
-uint16_t printIterationCounter = 0;
+uint8_t               lcdMode;
+uint8_t               displayMode;
+uint16_t              printIterationCounter;
+
+void display_setup() {
+    pinMode(RED_PIN,         OUTPUT);
+    pinMode(BLUE_PIN,        OUTPUT);
+    pinMode(GREEN_PIN,       OUTPUT);
+    
+    lcdMode               = 0;
+    displayMode           = 0;
+    printIterationCounter = 0;
+}
 
 void lcd_print(String line_1 = "", String line_2 = "") {
 	lcd_keypad.clear();
@@ -28,6 +42,13 @@ void lcd_print(String line_1 = "", String line_2 = "") {
 	lcd_keypad.print(line_1.c_str());
 	lcd_keypad.setCursor(0, 1);
 	lcd_keypad.print(line_2.c_str());
+}
+
+// Set the RGB LED
+void rgb_light(uint8_t red, uint8_t green, uint8_t blue) {
+  analogWrite(RED_PIN,   red);
+  analogWrite(GREEN_PIN, green);
+  analogWrite(BLUE_PIN,  blue);
 }
 
 void show_mode() {
@@ -59,7 +80,7 @@ void update_display(
         ) {
     // print to LCD
     printIterationCounter++;
-    if (printIterationCounter < iterationsBetweenPrints) {
+    if (printIterationCounter < ITERATIONS_BETWEEN_PRINTS) {
         return;
     }
     printIterationCounter = 0;

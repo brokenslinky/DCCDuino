@@ -3,20 +3,15 @@
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  
+  display_setup();
+
   lcd_print("ACDCduino by    ",
             "   Brock Palmer ");
+  // Orange light
+  rgb_light(255, 125, 0);
 
   pinMode(SPEEDOMETER_PIN, INPUT);
-  pinMode(CALIBRATION_PIN, INPUT);
-  pinMode(SLICKNESS_PIN,   INPUT);
-  pinMode(RAMP_PIN,        INPUT);
-
-  pinMode(LED_GROUND_PIN,  OUTPUT);
   pinMode(POWER_OUT_PIN,   OUTPUT);
-  pinMode(RED_PIN,         OUTPUT);
-  pinMode(BLUE_PIN,        OUTPUT);
-  pinMode(GREEN_PIN,       OUTPUT);
 
   // Change PWM frequency of POWER_OUT_PIN
   // Pin 9 should be on TCA0-WO0
@@ -27,20 +22,12 @@ void setup() {
   // 1/8 of this should be 122 Hz
   // I think 0x1 is already used. This is a divisor of 4, so I want a divisor of 32.
   // See https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega4808-09-DataSheet-DS40002173B.pdf 
-  
-  lcdMode = 0;
-  displayMode = 0;
 
   // Initialize working variables
   speedoPeriod = 100.0; // 0.1 coresponds to ~100 mph. 100.0 coresponds to ~0.1 mph
   rollAngle    = 0.0;
   slip         = 0.0;
   pitchAngle   = 0.0;
-  
-  // Prepare LED
-  digitalWrite(LED_GROUND_PIN, LOW);
-  // Display orange light for initialization
-  led_light(255, 125, 0);
 
   float orientationCal[3];
 
@@ -65,14 +52,18 @@ void setup() {
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);
 
+  // I want to see the splash screen because I am vane.
+  delay(USER_READ_TIME_MILLIS);
+
   // Display blue light to indicate readiness
-  led_light(0, 0, 255);
+  rgb_light(0, 0, 255);
   lcd_print("Ready to race.  ");
 }
 
 void loop() {
   // Check the speedometer signal every iteration to make sure no pulses are missed.
   checkSpeedo();
+  check_user_input();
   
   // Refresh data from Inertial Measurement Unit.
   IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
@@ -118,11 +109,6 @@ void loop() {
     slip       = 0.0;
   }
   
-  // Check user input
-  if (lcd_keypad.readButtons() == BUTTON_SELECT) {
-    perform_calibration();
-  }
-  
   // determine lockup amount (127 = 50% duty cycle MAX)
   if (!longitudinal_sensitivity) {
     // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
@@ -147,7 +133,7 @@ void loop() {
   analogWrite(POWER_OUT_PIN, lockup);
 
   // LED changes from cyan to red and becomes brighter as the diff locks.
-  led_light(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
+  rgb_light(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
 
   update_display(
         lockup,
@@ -163,9 +149,13 @@ void loop() {
         friction,
         rampRate
         );
-  read_buttons();
 }
 
+/** 
+ * Need to check for a pulse from the speedometer signal frequently enough to catch every pulse.
+ * ToDo: Use bluetooth to read speed from the car's ECU.
+ *       If that's not possible, I think this can be set up as an interupt.
+ **/
 void checkSpeedo() {
   if (analogRead(SPEEDOMETER_PIN) > 64 /* ~0.3125V */) {
     if (!speedo_triggered) {      
@@ -182,8 +172,8 @@ void checkSpeedo() {
   }
 }
 
+/// while car is stationary, calibrate orientation and zero gyros
 void perform_calibration() {
-  // while car is stationary, calibrate orientation and zero gyros
   float x = 0.0;
   float y = 0.0;
   float z = 0.0;
@@ -198,7 +188,7 @@ void perform_calibration() {
 
   for (int i = 0; i < calibrationIterations; i++) {
     // Display orange light for wait
-    led_light(255, 150, 0);
+    rgb_light(255, 150, 0);
     
     // Determine direction of gravity
     IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
@@ -235,5 +225,5 @@ void perform_calibration() {
 
   lcd_print("  Calibration   ",
             "   Complete     ");
-  led_light(0, 255, 0); // green light
+  rgb_light(0, 255, 0); // green light
 }
