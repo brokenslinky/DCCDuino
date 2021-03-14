@@ -3,9 +3,8 @@
 
 // Planning to use 
 // ARDUINO UNO WIFI REV2 
-// This LCD Keypad - https://www.adafruit.com/product/716
 
-#include <Arduino_LSM6DS3.h>    // Internal IMU on the Uno WiFi Rev2
+#include <Arduino_LSM6DS3.h> // Internal IMU on the Uno WiFi Rev2
 
 #include "Storage.h"
 #include "Orientation_Matrix.h"

@@ -1,4 +1,7 @@
-#include <Adafruit_RGBLCDShield.h>
+// This is the LCD Keypad I used - https://www.adafruit.com/product/716
+
+#include <Adafruit_RGBLCDShield.h> // https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
+
 #include "math.h"
 #include <Arduino.h>
 #include <string.h>
