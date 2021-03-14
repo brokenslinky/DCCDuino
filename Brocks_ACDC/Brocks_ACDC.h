@@ -35,9 +35,10 @@ float unadjusted_accel[3];
 float unadjusted_rotation[3];
 
 // Calibration variables
-float gyroOffset[3];
-float accelZero[3];
 float accelScale[3];
+float accelOffset[3];
+float gyroScale[3];
+float gyroOffset[3];
 
 // Slip angle and speed;
 float slip;

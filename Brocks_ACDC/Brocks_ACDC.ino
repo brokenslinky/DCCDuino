@@ -36,7 +36,7 @@ void setup() {
   // orientationCal[1] = 0;         // y/g
   // orientationCal[2] = 1/2;       // z/g
   // for (int i = 0; i < 3; i++) {
-  //   accelZero[i]  = 0;
+  //   accelOffset[i]  = 0;
   //   accelScale[i] = 0.1;
   // }
   // This estimates no yaw offset, 60 degree pitch, no roll, perfect zero balance and scale
@@ -44,10 +44,11 @@ void setup() {
   // Pull calibration data and configuration from EEPROM
   display.print("Getting cal data", 
                 "from EEPROM...  ");
-  EEPROM_read_vector(ZERO_CAL_ADDR,        accelZero);
-  EEPROM_read_vector(ZERO_CAL_ADDR + 3*4,  gyroOffset);
-  EEPROM_read_vector(SCALE_CAL_ADDR,       accelScale);
-  EEPROM_read_vector(ORIENTATION_CAL_ADDR, orientationCal);
+  EEPROM_read_vector(ACCEL_ZERO_ADDR,        accelOffset);
+  EEPROM_read_vector(GYRO_ZERO_ADDR,         gyroOffset);
+  EEPROM_read_vector(ACCEL_SCALE_ADDR,       accelScale);
+  EEPROM_read_vector(GYRO_SCALE_ADDR,        gyroScale);
+  EEPROM_read_vector(ORIENTATION_CAL_ADDR,   orientationCal);
   EEPROM_read_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
 
   // Create calibration matrix from orientation data
@@ -71,12 +72,12 @@ void loop() {
   IMU.readGyroscope(unadjusted_rotation[0], unadjusted_rotation[1], unadjusted_rotation[2]);
 
   // Zero and scale the sensor data.
-  float x = (unadjusted_accel[0] - accelZero[0]) * accelScale[0];
-  float y = (unadjusted_accel[1] - accelZero[1]) * accelScale[1];
-  float z = (unadjusted_accel[2] - accelZero[2]) * accelScale[2];
-  float x_rot = (unadjusted_rotation[0] - accelZero[0]) * accelScale[0];
-  float y_rot = (unadjusted_rotation[1] - accelZero[1]) * accelScale[1];
-  float z_rot = (unadjusted_rotation[2] - accelZero[2]) * accelScale[2];
+  float x = (unadjusted_accel[0] - accelOffset[0]) * accelScale[0];
+  float y = (unadjusted_accel[1] - accelOffset[1]) * accelScale[1];
+  float z = (unadjusted_accel[2] - accelOffset[2]) * accelScale[2];
+  float x_rot = (unadjusted_rotation[0] - gyroOffset[0]) * gyroScale[0];
+  float y_rot = (unadjusted_rotation[1] - gyroOffset[1]) * gyroScale[1];
+  float z_rot = (unadjusted_rotation[2] - gyroOffset[2]) * gyroScale[2];
 
   // Convert from sensor coordinates to vehicle coordinates.
   longitudinalAccel = orientation_matrix.longitudinal(x, y, z);
@@ -195,7 +196,7 @@ void perform_calibration() {
     IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
     for ( int j = 0; j < 3; j++)
     {
-      tmp[j] = (unadjusted_accel[j] - accelZero[j]) * accelScale[j];
+      tmp[j] = (unadjusted_accel[j] - accelOffset[j]) * accelScale[j];
     }
     x += tmp[0];
     y += tmp[1];
@@ -222,7 +223,7 @@ void perform_calibration() {
   for (int j = 0; j < 3; j++) {
     gyroOffset[j] /= calibrationIterations;
   }
-  EEPROM_write_vector(ZERO_CAL_ADDR + 4*3, gyroOffset);
+  EEPROM_write_vector(GYRO_ZERO_ADDR, gyroOffset);
 
   display.print("  Calibration   ",
                 "   Complete     ");

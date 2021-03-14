@@ -2,17 +2,19 @@
 #define STORAGE_H
 //set EEPROM addresses for calibration data
 
-#define ZERO_CAL_ADDR        0x00 // 6 floats = 24 bytes
-#define SCALE_CAL_ADDR       0x18 // 6 floats = 24 bytes
-#define ORIENTATION_CAL_ADDR 0x30 // 4 floats = 16 bytes
-#define SENSITIVITIES_ADDR   0x40 // 2 4-bits =  1 byte
+#define ACCEL_ZERO_ADDR      0x00 // (0)  3 floats = 12 bytes
+#define GYRO_ZERO_ADDR       0x0c // (12) 3 floats = 12 bytes
+#define ACCEL_SCALE_ADDR     0x18 // (24) 3 floats = 12 bytes
+#define GYRO_SCALE_ADDR      0x24 // (36) 3 floats = 12 bytes
+#define ORIENTATION_CAL_ADDR 0x30 // (48) 3 floats = 12 bytes
+#define SENSITIVITIES_ADDR   0x3c // (60) 2 4-bits =  1 byte
 
-//next available address is 0x41 (49)
-//last available addresses is 0x99 (254)
+//next available address is 0x3d (61)
+//last available addresses is 0xff (255)
 
 #include <EEPROM.h>
 
-/// Get the ability to read/write doubles on EEPROM
+/** Write a floating point number to EEPROM **/
 void EEPROM_write_float(int EEPROM_addr, float value) {
     byte* p = (byte*)(void*)&value;
     for (int i = 0; i < sizeof(value); i++) {
@@ -20,6 +22,7 @@ void EEPROM_write_float(int EEPROM_addr, float value) {
     }
 }
 
+/** Read a floating point number from EEPROM **/
 float EEPROM_read_float(int EEPROM_addr) {
     float value = 0.0;
     byte* p = (byte*)(void*)&value;
@@ -29,6 +32,7 @@ float EEPROM_read_float(int EEPROM_addr) {
     return value;
 }
 
+/** Write a 3-dimensional floating point vector to EEPROM **/
 void EEPROM_write_vector(int EEPROM_addr, float value[3]) {
     byte* p = (byte*)(void*)&value;
     for (int i = 0; i < sizeof(float[3]); i++) {
@@ -36,7 +40,7 @@ void EEPROM_write_vector(int EEPROM_addr, float value[3]) {
     }
 }
 
-/// Reads a 3-dimensional float from the EEPROM_addr and writes to the provided pointer
+/** Read a 3-dimensional float from the EEPROM_addr and writes to the provided pointer **/
 void EEPROM_read_vector(int EEPROM_addr, float* returned_vector) {
     byte* p = (byte*)(void*)returned_vector;
     for (int i = 0; i < sizeof(float[3]); i++) {
@@ -44,14 +48,14 @@ void EEPROM_read_vector(int EEPROM_addr, float* returned_vector) {
     }
 }
 
-/// Save the in-memory values of sensitivities to ROM
+/** Save a pair of 4-bit objects to EEPROM **/
 void EEPROM_write_short_pair(int EEPROM_addr, uint8_t first, uint8_t second) {
     // These values should be <16. Package them together in 1 byte.
     uint8_t tmp = (first & 0x0f) << 4 | (second & 0x0f);
     EEPROM.write(SENSITIVITIES_ADDR, tmp);
 }
 
-/// Populate in-memory values of sensitivities from ROM
+/** Read a pair of 4-bit objects from EEPROM and write to the provided in-memory references **/
 void EEPROM_read_short_pair(int EEPROM_addr, uint8_t &first, uint8_t &second) {
     uint8_t tmp = EEPROM.read(EEPROM_addr);
     first = (tmp & 0xf0) >> 4; // first 4 bits in the address
