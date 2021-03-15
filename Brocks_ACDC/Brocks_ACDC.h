@@ -11,7 +11,7 @@
 #include "User_Interface.h"
 
 // Pin Assignments
-#define SPEEDOMETER_PIN A5
+#define SPEEDOMETER_PIN A3
 #define DIFF_LOCK_PIN   9
 
 // Settings

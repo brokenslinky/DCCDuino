@@ -32,11 +32,10 @@ float EEPROM_read_float(int EEPROM_addr) {
     return value;
 }
 
-/** Write a 3-dimensional floating point vector to EEPROM **/
-void EEPROM_write_vector(int EEPROM_addr, float value[3]) {
-    byte* p = (byte*)(void*)&value;
-    for (int i = 0; i < sizeof(float[3]); i++) {
-        EEPROM.write(EEPROM_addr++, *p++);
+/** Write a floating point vector to EEPROM **/
+void EEPROM_write_vector(int EEPROM_addr, float* array, int dimensions = 3) {
+    for (int i = 0; i < dimensions; i++) {
+        EEPROM_write_float(EEPROM_addr + i * sizeof(float), array[i]);
     }
 }
 

@@ -3,12 +3,16 @@
 void setup() {
   Serial.begin(9600);
   Wire.begin();
+  IMU.begin();
   init_UI();
 
   display.print("ACDCduino by    ",
                 "   Brock Palmer ");
   // Orange light
   display.set_rgb(255, 125, 0);
+
+  // I want to see the splash screen because I am vane.
+  display.delay_UI(USER_READ_TIME_MILLIS);
 
   pinMode(SPEEDOMETER_PIN,  INPUT);
   pinMode(DIFF_LOCK_PIN,    OUTPUT);
@@ -53,9 +57,6 @@ void setup() {
 
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);
-
-  // I want to see the splash screen because I am vane.
-  delay(USER_READ_TIME_MILLIS);
 
   // Display blue light to indicate readiness
   display.set_rgb(0, 0, 255);
@@ -110,9 +111,9 @@ void loop() {
     rollAngle  = 0.0;
     slip       = 0.0;
   }
-  
+
   // determine lockup amount (127 = 50% duty cycle MAX)
-  if (!longitudinal_sensitivity) {
+  if (longitudinal_sensitivity == 0) {
     // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
     lockup = 127.0 * lateral_sensitivity / 15; // manual mode if rampRate set to zero
   } else {
@@ -135,7 +136,9 @@ void loop() {
   analogWrite(DIFF_LOCK_PIN, lockup);
 
   // LED changes from cyan to red and becomes brighter as the diff locks.
-  display.set_rgb(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
+  // display.set_rgb(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
+  // 0 cyan -> 25 green -> 50 yellow -> 75 red 
+  display.set_rgb(2 * lockup, 223 - lockup, 159 - lockup);
 
   display.update(
         lockup,
@@ -148,8 +151,8 @@ void loop() {
         longitudinalSpeed,
         rollAngle,
         pitchAngle,
-        friction,
-        rampRate
+        longitudinal_sensitivity,
+        lateral_sensitivity
         );
 }
 

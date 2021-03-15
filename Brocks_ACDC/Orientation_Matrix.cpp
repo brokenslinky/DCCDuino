@@ -52,9 +52,9 @@ void OrientationMatrix::update(float x_0, float y_0, float z_0) {
     float r_0 = sqrt(x_0 * x_0 + y_0 * y_0);
     float g_0 = sqrt(r_0 * r_0 + z_0 * z_0);
 
-    dlongdx = z_0 * x_0 / (g_0 * r_0);     dlongdy = -z_0 * y_0 / (g_0 * r_0);     dlongdz = -r_0 / g_0;
-    dlatdx  = y_0 / r_0;                   dlatdy  =  x_0 / r_0;                   dlatdz  =  0;
-    dvertdx = x_0 / g_0;                   dvertdy = -y_0 / g_0;                   dvertdz =  z_0 / g_0;
+    dlongdx = -z_0 * x_0 / (g_0 * r_0);     dlongdy = z_0 * y_0 / (g_0 * r_0);     dlongdz = -r_0 / g_0;
+    dlatdx  = y_0 / r_0;                    dlatdy  = x_0 / r_0;                   dlatdz  =  0;
+    dvertdx = -x_0 / g_0;                   dvertdy = y_0 / g_0;                   dvertdz =  z_0 / g_0;
 }
 
 void OrientationMatrix::update(float initial_orientation[3]) {

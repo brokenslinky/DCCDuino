@@ -1,7 +1,7 @@
 #include "Display.h"
 #include "Storage.h"
 
-#define ANTI_BOUNCE_MILLIS 100
+#define ANTI_BOUNCE_MILLIS 64 * 4 // * 4 CLK correction
 
 Display display;
 
@@ -52,9 +52,9 @@ void adjust(uint8_t button) {
       EEPROM_write_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
       display.print("Configuration   ",
                     "saved to EEPROM.");
-      return delay(USER_READ_TIME_MILLIS);
+      break;
   }
-  delay(ANTI_BOUNCE_MILLIS);
+  display.delay_UI(ANTI_BOUNCE_MILLIS);
 }
 
 /** 
@@ -62,6 +62,10 @@ void adjust(uint8_t button) {
  * ToDo: This would be better as an interupt.
  **/
 void check_user_input() {
+  if (display.is_waiting()) {
+    return;
+  }
+
   uint8_t button = display.lcd_keypad.readButtons();
   if (!button) {
     return;
@@ -80,10 +84,10 @@ void check_user_input() {
   switch (button) {
     case BUTTON_RIGHT:
       display.subscreen++;
-      return delay(ANTI_BOUNCE_MILLIS);
+      return display.delay_UI(ANTI_BOUNCE_MILLIS);
     case BUTTON_LEFT:
       display.subscreen--;
-      return delay(ANTI_BOUNCE_MILLIS);
+      return display.delay_UI(ANTI_BOUNCE_MILLIS);
     case BUTTON_DOWN:
     case BUTTON_SELECT:
       display.subscreen = 0;

@@ -5,6 +5,9 @@ void Display::init() {
     pinMode(BLUE_PIN,        OUTPUT);
     pinMode(GREEN_PIN,       OUTPUT);
 
+    lcd_keypad.begin(16, 2);
+    lcd_keypad.setBacklight(0x6);
+
     mode                  = 0;
     subscreen             = 0;
     printIterationCounter = 0;
@@ -22,6 +25,19 @@ void Display::set_rgb(uint8_t red, uint8_t green, uint8_t blue) {
     analogWrite(RED_PIN,   red);
     analogWrite(GREEN_PIN, green);
     analogWrite(BLUE_PIN,  blue);
+
+    const uint8_t threshold = 127;
+    uint8_t color = 0x00;
+    if (red > threshold) {
+        color |= 0x1;
+    }
+    if (green > threshold) {
+        color |= 0x2;
+    }
+    if (blue > threshold) {
+        color |= 0x4;
+    }
+    lcd_keypad.setBacklight(color);
 }
 
 void Display::show_mode() {
@@ -30,13 +46,10 @@ void Display::show_mode() {
     } else if (mode == DisplayMode::STATS) {
         print("Status          ");
     } else if (mode == DisplayMode::INPUTS) {
-        print("Inputs          ");       
-    } else if (mode == DisplayMode::ERRORS) {
-        print("Errors          ");
+        print("Inputs          ");   
     }
-    delay(USER_READ_TIME_MILLIS); // Give the user time to read.
+    delay_UI(USER_READ_TIME_MILLIS); // Give the user time to read.
 }
-
 
 void Display::update(
         int   lockup,
@@ -64,13 +77,13 @@ void Display::update(
 
     switch (mode) {
         case DisplayMode::CONFIGS:
-            if (!longitudinal_sensitivity) {
+            if (longitudinal_sensitivity == 0) {
                 // Manual mode accessed by turning longitudinal sensitivity to zero.
                 return print("Manual Mode Lock",
-                    String(100.0 * (float)lateral_sensitivity / 15.0) + " %");
+                    String((float)lockup * 100.0 / 127.0) + " %");
             }
-            return print("Longitudinal: " + longitudinal_sensitivity,
-                         "Lateral:      " + lateral_sensitivity);
+            return print("Longitudinal: " + String(longitudinal_sensitivity),
+                         "Lateral:      " + String(lateral_sensitivity));
         case DisplayMode::STATS:
             switch(subscreen) {
                 case 0:
@@ -124,4 +137,38 @@ void Display::update(
                     return;
             }
     }
+}
+
+void Display::delay_UI(unsigned long ms) {
+    while(ms > 65) {
+        delayMicroseconds(65000);
+        ms -= 65;
+    }
+    delayMicroseconds(ms * 1000);
+
+    // unsigned long start = micros();
+    // _wait_until = start + ms + 1000;
+    // _waiting = true;
+    // Serial.println(("Start time: " + String(start)).c_str());
+    // Serial.println(("End time: " + String(_wait_until)).c_str());
+    // if (_wait_until < start) {
+    //     while (_wait_until < micros()) {
+    //     // Wait for overflow
+    //     // This will lock up the entire device, not just the UI.
+    //     // Timer overflow should occur infrequently enough that it's not a big deal.
+    //     }
+    // }
+}
+
+bool Display::is_waiting() {
+    if (!_waiting) {
+        return false;
+    }
+    if (micros() > _wait_until) {
+        _waiting = false;
+        return false;
+    }
+    // Serial.println(("Now: " + String(micros())).c_str());
+    // Serial.println(("Wait until: " + String(_wait_until)).c_str());
+    return true;
 }

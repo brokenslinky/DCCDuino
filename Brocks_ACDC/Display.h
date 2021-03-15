@@ -6,8 +6,8 @@
 #include <Arduino.h>
 #include <string.h>
 
-#define USER_READ_TIME_MILLIS  1500
-#define ITERATIONS_BETWEEN_PRINTS 2
+#define USER_READ_TIME_MILLIS   1000 * 4 // * 4 CLK correction
+#define ITERATIONS_BETWEEN_PRINTS  8
 
 // Pins for RGB light
 #define RED_PIN   3
@@ -19,7 +19,6 @@ enum DisplayMode
     CONFIGS = 0,
     STATS,
     INPUTS,
-    ERRORS,
     ENUM_END
 };
 
@@ -62,4 +61,14 @@ struct Display
             uint8_t longitudinal_sensitivity,
             uint8_t lateral_sensitivity
             );
+
+    /** Prevent any user inputs or screen refreshes for the provided time. **/
+    void delay_UI(unsigned long ms);
+
+    /** Should the UI be waiting on a previously requested delay? **/
+    bool is_waiting();
+
+    private:
+    bool _waiting = false;
+    unsigned long _wait_until;
 };

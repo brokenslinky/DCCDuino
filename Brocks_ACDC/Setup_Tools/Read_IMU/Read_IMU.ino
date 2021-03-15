@@ -52,6 +52,8 @@ void measure_averages() {
 void setup() {
     Serial.begin(9600);
     Wire.begin();
+    IMU.begin();
+
     display.init();
 
     measure_averages();
@@ -63,6 +65,8 @@ void loop() {
     if (reading_iterator >= 6) {
         reading_iterator = 0;
     }
+
+    measure_averages();
 
     if (reading_iterator < 3) {
         float average_reading = avg_acceleration[reading_iterator];
