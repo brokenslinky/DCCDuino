@@ -48,12 +48,13 @@ void setup() {
   // Pull calibration data and configuration from EEPROM
   display.print("Getting cal data", 
                 "from EEPROM...  ");
-  EEPROM_read_vector(ACCEL_ZERO_ADDR,        accelOffset);
-  EEPROM_read_vector(GYRO_ZERO_ADDR,         gyroOffset);
-  EEPROM_read_vector(ACCEL_SCALE_ADDR,       accelScale);
-  EEPROM_read_vector(GYRO_SCALE_ADDR,        gyroScale);
-  EEPROM_read_vector(ORIENTATION_CAL_ADDR,   orientationCal);
-  EEPROM_read_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
+  EEPROM_read_vector(ACCEL_ZERO_ADDR,           accelOffset);
+  EEPROM_read_vector(GYRO_ZERO_ADDR,            gyroOffset);
+  EEPROM_read_vector(ACCEL_SCALE_ADDR,          accelScale);
+  EEPROM_read_vector(GYRO_SCALE_ADDR,           gyroScale);
+  EEPROM_read_vector(ORIENTATION_CAL_ADDR,      orientationCal);
+  EEPROM_read_short_pair(SENSITIVITIES_ADDR,    longitudinal_sensitivity, lateral_sensitivity);
+  EEPROM_read_short_pair(BRAKE_THRESHOLDS_ADDR, brake_lock_begin, brake_ramp_width);
 
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);
@@ -113,13 +114,19 @@ void loop() {
   }
 
   // determine lockup amount (127 = 50% duty cycle MAX)
+  
   if (longitudinal_sensitivity == 0) {
     // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
     lockup = 127.0 * lateral_sensitivity / 15; // manual mode if rampRate set to zero
   } else {
     friction = 1.5 - 0.1 * (float)longitudinal_sensitivity;
     rampRate = 1.0 / ( 3.01 - 0.2 * (float)lateral_sensitivity);
-    float lock_from_acceleration = 1.625 * (longitudinalAccel * cos(slip) - abs(lateralAccel) * sin(slip)) / ( friction * verticalAccel) - 1;
+    float lock_from_acceleration;
+    if (longitudinalAccel > 0.0) {
+      lock_from_acceleration = 1.625 * (longitudinalAccel * cos(slip) - abs(lateralAccel) * sin(slip)) / (friction * verticalAccel) - 1;
+    } else if (abs(lateralAccel / verticalAccel) > brake_lock_begin * 0.1) {
+      lock_from_acceleration = (abs(longitudinalAccel / verticalAccel) - brake_lock_begin * 0.1) / (1.0 + brake_ramp_width * 0.1);
+    }
     float lock_from_yaw_rate     = rampRate * 0.04559 * abs(yawRate) * longitudinalSpeed / 
                                    (abs(lateralAccel) * cos(slip) * cos(slip) + longitudinalAccel * cos(slip) * sin(slip));
     lockup = 127.0 * (lock_from_acceleration + lock_from_yaw_rate);
@@ -152,7 +159,9 @@ void loop() {
         rollAngle,
         pitchAngle,
         longitudinal_sensitivity,
-        lateral_sensitivity
+        lateral_sensitivity,
+        brake_lock_begin,
+        brake_ramp_width
         );
 }
 

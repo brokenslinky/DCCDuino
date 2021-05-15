@@ -28,6 +28,14 @@ void print_stored_vector(int EEPROM_ADDR, String descrition = "") {
     }
 }
 
+void print_stored_short_pair(int EEPROM_ADDR, String description_1 = "", String description_2 = "") {
+    uint8_t value_1;
+    uint8_t value_2;
+    EEPROM_read_short_pair(SENSITIVITIES_ADDR, value_1, value_2);
+    Serial.println((description_1 + ": " + String(value_1)).c_str());
+    Serial.println((description_2 + ": " + String(value_2)).c_str());
+}
+
 void setup() {
     Serial.begin(9600);
     Wire.begin();
@@ -37,8 +45,9 @@ void setup() {
     EEPROM_write_vector(ACCEL_SCALE_ADDR,     one_vector);
     EEPROM_write_vector(GYRO_SCALE_ADDR,      one_vector);
     EEPROM_write_vector(ORIENTATION_CAL_ADDR, sixty_degrees);
-    EEPROM_write_short_pair(SENSITIVITIES_ADDR, 0, 0);
     // This Represents no offsets or rescaling, 60 degree mounting pitch, no roll
+    EEPROM_write_short_pair(SENSITIVITIES_ADDR, 0, 0);
+    EEPROM_write_short_pair(BRAKE_THRESHOLDS_ADDR, 2, 5);
 
     // Verify the values were stored and can be read back.
     Serial.println("Wrote default calibration to EEPROM:");
@@ -47,11 +56,8 @@ void setup() {
     print_stored_vector(ACCEL_SCALE_ADDR,     "Accel Scale");
     print_stored_vector(GYRO_SCALE_ADDR,      "Gyro Scale");
     print_stored_vector(ORIENTATION_CAL_ADDR, "Orientation");
-    uint8_t longitudinal_sensitivity;
-    uint8_t lateral_sensitivity;
-    EEPROM_read_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
-    Serial.println(("Longitudinal Sensitivity: " + String(longitudinal_sensitivity)).c_str());
-    Serial.println(("Lateral Sensitivity: " + String(lateral_sensitivity)).c_str());
+    print_stored_short_pair(SENSITIVITIES_ADDR, "Longitudinal Sensitivity", "Lateral Sensitivity");
+    print_stored_short_pair(BRAKE_THRESHOLDS_ADDR, "Brake Begin", "Brake Ramp Width");
 }
 
 void loop() {

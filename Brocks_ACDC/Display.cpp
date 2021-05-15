@@ -63,7 +63,9 @@ void Display::update(
         float rollAngle,
         float pitchAngle,
         uint8_t longitudinal_sensitivity,
-        uint8_t lateral_sensitivity
+        uint8_t lateral_sensitivity, 
+        uint8_t brake_lock_begin,
+        uint8_t brake_ramp_width
         ) 
 {
     // print to LCD
@@ -84,6 +86,9 @@ void Display::update(
             }
             return print("Longitudinal: " + String(longitudinal_sensitivity),
                          "Lateral:      " + String(lateral_sensitivity));
+        case DisplayMode::CONFIGS_2:
+            return print("Brake begin:  " + String(brake_lock_begin),
+                         "Ramp width:   " + String(brake_ramp_width));
         case DisplayMode::STATS:
             switch(subscreen) {
                 case 0:

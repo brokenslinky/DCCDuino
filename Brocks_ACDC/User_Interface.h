@@ -5,51 +5,61 @@
 
 Display display;
 
-bool calibrating = false;
-bool adjusting   = false;
+bool calibrating             = false;
+bool adjusting_sensitivities = false;
+bool adjusting_brake         = false;
 
 // In-memory copies of sensitivities
-// Declared here so the can adjust them.
+// Declared here so we can adjust them.
 // These will be stored as 4 bits each and share 1 byte.
 // Maximum value = 15
 uint8_t longitudinal_sensitivity = 0;
 uint8_t lateral_sensitivity      = 0;
+uint8_t brake_lock_begin         = 2; // Normalize to 1 = 0.1g
+uint8_t brake_ramp_width         = 5; // Additive to brake_lock_begin. Also normalized to +1 = +.01g 
 
 /** Initialize **/
 void init_UI() {
   display.init();
   calibrating              = false;
-  adjusting                = false;
+  adjusting_sensitivities  = false;
+  adjusting_brake          = false;
   longitudinal_sensitivity = 0;
   lateral_sensitivity      = 0;
+  brake_lock_begin         = 2;
+  brake_ramp_width         = 5;
 }
 
 /** Adjust the sensitivity configurations based on the provided button input. **/
-void adjust(uint8_t button) {
+void adjust(uint8_t button, 
+            long EEPROM_ADDR = SENSITIVITIES_ADDR, 
+            uint8_t& value_1 = longitudinal_sensitivity,
+            uint8_t& value_2 = lateral_sensitivity) {
   switch (button) {
     case BUTTON_UP:
-      if (longitudinal_sensitivity < 0x0f) {
-        longitudinal_sensitivity++;
+      if (value_1 < 0x0f) {
+        value_1++;
       }
       break;
     case BUTTON_DOWN:
-      if (longitudinal_sensitivity > 0) {
-        longitudinal_sensitivity--;
+      if (value_1 > 0) {
+        value_1--;
       }
       break;
     case BUTTON_LEFT:
-      if (lateral_sensitivity > 0) {
-        lateral_sensitivity--;
+      if (value_2 > 0) {
+        value_2--;
       }
       break;
     case BUTTON_RIGHT:
-      if (lateral_sensitivity < 0x0f) {
-        lateral_sensitivity++;
+      if (value_2 < 0x0f) {
+        value_2++;
       }
       break;
     case BUTTON_SELECT:
-      adjusting = false;
-      EEPROM_write_short_pair(SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
+      adjusting_sensitivities = false;
+      adjusting_brake = false;
+      EEPROM_write_short_pair(EEPROM_ADDR, value_1, value_2);
       display.print("Configuration   ",
                     "saved to EEPROM.");
       break;
@@ -71,14 +81,19 @@ void check_user_input() {
     return;
   }
 
-  if (adjusting) {
-    return adjust(button);
+  if (adjusting_sensitivities) {
+    return adjust(button, SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
+  } else if (adjusting_brake) {
+    return adjust(button, BRAKE_THRESHOLDS_ADDR, brake_lock_begin, brake_ramp_width);
   }
 
-  // Special behavior for directional buttons on the config screen
+  // Special behavior for directional buttons on the config screens
   if (display.mode == DisplayMode::CONFIGS && button != BUTTON_SELECT) {
-    adjusting = true;
-    return adjust(button);
+    adjusting_sensitivities = true;
+    return adjust(button, SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
+  }else if (display.mode == DisplayMode::CONFIGS_2 && button != BUTTON_SELECT) {
+    adjusting_brake = true;
+    return adjust(button, BRAKE_THRESHOLDS_ADDR, brake_lock_begin, brake_ramp_width);
   }
 
   switch (button) {

@@ -17,6 +17,7 @@
 enum DisplayMode
 {
     CONFIGS = 0,
+    CONFIGS_2,
     STATS,
     INPUTS,
     ENUM_END
@@ -59,7 +60,9 @@ struct Display
             float rollAngle,
             float pitchAngle,
             uint8_t longitudinal_sensitivity,
-            uint8_t lateral_sensitivity
+            uint8_t lateral_sensitivity,
+            uint8_t brake_lock_begin,
+            uint8_t brake_ramp_width
             );
 
     /** Prevent any user inputs or screen refreshes for the provided time. **/

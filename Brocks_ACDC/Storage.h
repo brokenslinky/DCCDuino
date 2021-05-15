@@ -2,14 +2,15 @@
 #define STORAGE_H
 //set EEPROM addresses for calibration data
 
-#define ACCEL_ZERO_ADDR      0x00 // (0)  3 floats = 12 bytes
-#define GYRO_ZERO_ADDR       0x0c // (12) 3 floats = 12 bytes
-#define ACCEL_SCALE_ADDR     0x18 // (24) 3 floats = 12 bytes
-#define GYRO_SCALE_ADDR      0x24 // (36) 3 floats = 12 bytes
-#define ORIENTATION_CAL_ADDR 0x30 // (48) 3 floats = 12 bytes
-#define SENSITIVITIES_ADDR   0x3c // (60) 2 4-bits =  1 byte
+#define ACCEL_ZERO_ADDR       0x00 // (0)  3 floats = 12 bytes
+#define GYRO_ZERO_ADDR        0x0c // (12) 3 floats = 12 bytes
+#define ACCEL_SCALE_ADDR      0x18 // (24) 3 floats = 12 bytes
+#define GYRO_SCALE_ADDR       0x24 // (36) 3 floats = 12 bytes
+#define ORIENTATION_CAL_ADDR  0x30 // (48) 3 floats = 12 bytes
+#define SENSITIVITIES_ADDR    0x3c // (60) 2 4-bits =  1 byte
+#define BRAKE_THRESHOLDS_ADDR 0x3d // (61) 2 4-bits =  1 byte
 
-//next available address is 0x3d (61)
+//next available address is 0x3e (62)
 //last available addresses is 0xff (255)
 
 #include <EEPROM.h>

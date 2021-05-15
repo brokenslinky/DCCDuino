@@ -57,6 +57,8 @@ float svt2;
 float speedCorrection    = 1.0;
 boolean toss = true;
 uint16_t numberSpeedData = 0;
+bool speedo_triggered = false;
+bool calibrationMode  = false;
 
 // Variables for dynamic corrections
 unsigned long lastTick = 0;
@@ -64,6 +66,3 @@ unsigned long interval = 1;
 unsigned long previousIteration = 0;
 unsigned long iterationTime = 0;
 unsigned long time = 0;
-
-bool speedo_triggered = false;
-bool calibrationMode  = false;
