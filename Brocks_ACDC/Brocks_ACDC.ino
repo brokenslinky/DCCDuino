@@ -19,9 +19,7 @@ void setup() {
 
   // Change PWM frequency of DIFF_LOCK_PIN
   // Pin 9 should be on TCA0-WO0
-  // TODO: Confirm this works
-  // TCA0.SINGLE.CTRLA = (TCA0.SINGLE.CTRLA & 0xF1) | (0x4 << 1);
-  TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV16_gc; // "| 0x1 might be needed to enable."
+  TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV16_gc | 0x1; 
   // Default frequency is 976 Hz
   // 1/8 of this should be 122 Hz
   // I think 0x1 is already used. This is a divisor of 4, so I want a divisor of 32.
