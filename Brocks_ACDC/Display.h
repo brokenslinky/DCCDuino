@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define USER_READ_TIME_MILLIS   1000 * 4 // * 4 CLK correction
-#define ITERATIONS_BETWEEN_PRINTS  8
+#define ITERATIONS_BETWEEN_PRINTS  32
 
 // Pins for RGB light
 #define RED_PIN   3
