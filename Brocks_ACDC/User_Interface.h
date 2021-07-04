@@ -1,7 +1,7 @@
 #include "Display.h"
 #include "Storage.h"
 
-#define ANTI_BOUNCE_MILLIS 64 * 4 // * 4 CLK correction
+#define ANTI_BOUNCE_MILLIS 128 * 4 // * 4 CLK correction
 
 Display display;
 
