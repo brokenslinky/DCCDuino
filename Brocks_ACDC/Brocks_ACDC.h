@@ -45,8 +45,6 @@ float speedoPeriod;
 float longitudinalSpeed;
 float rollAngle;
 float pitchAngle;
-float friction;
-float rampRate;
 
 // All of this crap is for a speed calibration.
 float previousSpeed      = 0.0;

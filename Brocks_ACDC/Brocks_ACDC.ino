@@ -105,7 +105,7 @@ void loop() {
   // these angles are zeroed when lateral acceleration is small
     
   // Zero the orientation any time the car is inertial.
-  if (abs(longitudinalAccel) < 0.1 && abs(lateralAccel) < 0.1) {
+  if (fabs(longitudinalAccel) < 0.1 && fabs(lateralAccel) < 0.1) {
     pitchAngle = 0.0;
     rollAngle  = 0.0;
     slip       = 0.0;
@@ -117,17 +117,36 @@ void loop() {
     // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
     lockup = 127.0 * lateral_sensitivity / 15; // manual mode if rampRate set to zero
   } else {
-    friction = 1.5 - 0.1 * (float)longitudinal_sensitivity;
-    rampRate = 1.0 / ( 3.01 - 0.2 * (float)lateral_sensitivity);
-    float lock_from_acceleration;
+    float longitudinal_friction = 1.6 - 0.1 * (float)longitudinal_sensitivity;
+    float lateral_friction      = 1.6 - 0.1 * (float)lateral_sensitivity;
+
+    // Different logic for braking versus accelerating. A dead zone under light deceleration may be useful.
+    float x_squared = 0.0;
     if (longitudinalAccel > 0.0) {
-      lock_from_acceleration = 1.625 * (longitudinalAccel * cos(slip) - abs(lateralAccel) * sin(slip)) / (friction * verticalAccel) - 1;
-    } else if (abs(lateralAccel / verticalAccel) > brake_lock_begin * 0.1) {
-      lock_from_acceleration = (abs(longitudinalAccel / verticalAccel) - brake_lock_begin * 0.1) / (1.0 + brake_ramp_width * 0.1);
+      x_squared = longitudinalAccel / longitudinal_friction;
+    } else if (fabs(lateralAccel / verticalAccel) > brake_lock_begin * 0.1) {
+      x_squared = (fabs(longitudinalAccel) - brake_lock_begin * 0.1 * verticalAccel) / (1.0 + brake_ramp_width * 0.1);
     }
-    float lock_from_yaw_rate     = rampRate * 0.04559 * abs(yawRate) * longitudinalSpeed / 
-                                   (abs(lateralAccel) * cos(slip) * cos(slip) + longitudinalAccel * cos(slip) * sin(slip));
-    lockup = 127.0 * (lock_from_acceleration + lock_from_yaw_rate);
+    x_squared *= x_squared;
+
+    float y_squared = (lateralAccel / lateral_friction) * (lateralAccel / lateral_friction);
+
+    lockup = 127.0 * sqrt(x_squared + y_squared) / fabs(verticalAccel); 
+
+    // Original logic. 
+    // I haven't really tested it yet, but not sure if comparing yaw rate to lateral / speed is a good idea since it is reactive rather than proactive.
+    // friction = 1.6 - 0.1 * (float)longitudinal_sensitivity;
+    // rampRate = 1.0 / ( 3.01 - 0.2 * (float)lateral_sensitivity);
+    // float lock_from_acceleration;
+    // if (longitudinalAccel > 0.0) {
+    //   lock_from_acceleration = 1.625 * (longitudinalAccel * cos(slip) - fabs(lateralAccel) * sin(slip)) / 
+    //     (friction * verticalAccel) - 1;
+    // } else if (fabs(lateralAccel / verticalAccel) > brake_lock_begin * 0.1) {
+    //   lock_from_acceleration = (fabs(longitudinalAccel / verticalAccel) - brake_lock_begin * 0.1) / (1.0 + brake_ramp_width * 0.1);
+    // }
+    // float lock_from_yaw_rate = rampRate * 0.04559 * fabs(yawRate) * longitudinalSpeed / 
+    //                   (fabs(lateralAccel) * cos(slip) * cos(slip) + longitudinalAccel * cos(slip) * sin(slip));
+    // lockup = 127.0 * (lock_from_acceleration + lock_from_yaw_rate);
   }
 
   if (lockup > 127.0) {
@@ -204,8 +223,7 @@ void perform_calibration() {
     
     // Determine direction of gravity
     IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
-    for ( int j = 0; j < 3; j++)
-    {
+    for ( int j = 0; j < 3; j++) {
       tmp[j] = (unadjusted_accel[j] - accelOffset[j]) * accelScale[j];
     }
     x += tmp[0];
