@@ -52,7 +52,7 @@ void EEPROM_read_vector(int EEPROM_addr, float* returned_vector) {
 void EEPROM_write_short_pair(int EEPROM_addr, uint8_t first, uint8_t second) {
     // These values should be <16. Package them together in 1 byte.
     uint8_t tmp = (first & 0x0f) << 4 | (second & 0x0f);
-    EEPROM.write(SENSITIVITIES_ADDR, tmp);
+    EEPROM.write(EEPROM_addr, tmp);
 }
 
 /** Read a pair of 4-bit objects from EEPROM and write to the provided in-memory references **/
