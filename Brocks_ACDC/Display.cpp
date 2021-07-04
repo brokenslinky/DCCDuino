@@ -150,19 +150,6 @@ void Display::delay_UI(unsigned long ms) {
         ms -= 65;
     }
     delayMicroseconds(ms * 1000);
-
-    // unsigned long start = micros();
-    // _wait_until = start + ms + 1000;
-    // _waiting = true;
-    // Serial.println(("Start time: " + String(start)).c_str());
-    // Serial.println(("End time: " + String(_wait_until)).c_str());
-    // if (_wait_until < start) {
-    //     while (_wait_until < micros()) {
-    //     // Wait for overflow
-    //     // This will lock up the entire device, not just the UI.
-    //     // Timer overflow should occur infrequently enough that it's not a big deal.
-    //     }
-    // }
 }
 
 bool Display::is_waiting() {
@@ -173,7 +160,5 @@ bool Display::is_waiting() {
         _waiting = false;
         return false;
     }
-    // Serial.println(("Now: " + String(micros())).c_str());
-    // Serial.println(("Wait until: " + String(_wait_until)).c_str());
     return true;
 }

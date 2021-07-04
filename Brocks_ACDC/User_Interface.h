@@ -62,6 +62,7 @@ void adjust(uint8_t button,
       EEPROM_write_short_pair(EEPROM_ADDR, value_1, value_2);
       display.print("Configuration   ",
                     "saved to EEPROM.");
+      display.delay_UI(USER_READ_TIME_MILLIS);
       break;
   }
   display.delay_UI(ANTI_BOUNCE_MILLIS);
