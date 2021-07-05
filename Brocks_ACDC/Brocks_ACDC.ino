@@ -26,10 +26,10 @@ void setup() {
   // See https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega4808-09-DataSheet-DS40002173B.pdf 
 
   // Initialize working variables
-  speedoPeriod = 100.0; // 0.1 coresponds to ~100 mph. 100.0 coresponds to ~0.1 mph
-  rollAngle    = 0.0;
-  slip         = 0.0;
-  pitchAngle   = 0.0;
+  speedoPeriod        = 100.0; // 0.1 coresponds to ~100 mph. 100.0 coresponds to ~0.1 mph
+  state.roll_angle    = 0.0;
+  state.slip          = 0.0;
+  state.pitch_angle   = 0.0;
 
   float orientationCal[3];
 
@@ -51,8 +51,8 @@ void setup() {
   EEPROM_read_vector(ACCEL_SCALE_ADDR,          accelScale);
   EEPROM_read_vector(GYRO_SCALE_ADDR,           gyroScale);
   EEPROM_read_vector(ORIENTATION_CAL_ADDR,      orientationCal);
-  EEPROM_read_short_pair(SENSITIVITIES_ADDR,    longitudinal_sensitivity, lateral_sensitivity);
-  EEPROM_read_short_pair(BRAKE_THRESHOLDS_ADDR, brake_lock_begin, brake_ramp_width);
+  EEPROM_read_short_pair(SENSITIVITIES_ADDR,    state.longitudinal_sensitivity, state.lateral_sensitivity);
+  EEPROM_read_short_pair(BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin,         state.brake_ramp_width);
 
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);
@@ -80,17 +80,17 @@ void loop() {
   float z_rot = (unadjusted_rotation[2] - gyroOffset[2]) * gyroScale[2];
 
   // Convert from sensor coordinates to vehicle coordinates.
-  longitudinalAccel = orientation_matrix.longitudinal(x, y, z);
-  lateralAccel      = orientation_matrix.lateral     (x, y, z);
-  verticalAccel     = orientation_matrix.vertical    (x, y, z);
-  rollRate          = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
-  pitchRate         = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
-  yawRate           = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
+  state.longitudinal_accel = orientation_matrix.longitudinal(x, y, z);
+  state.lateral_accel      = orientation_matrix.lateral     (x, y, z);
+  state.vertical_accel     = orientation_matrix.vertical    (x, y, z);
+  state.roll_rate          = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
+  state.pitch_rate         = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
+  state.yaw_rate           = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
   
   //convert gyros to SI units
-  rollRate  *= 0.01745329251; // rad/s
-  pitchRate *= 0.01745329251; // pi / 180
-  yawRate   *= 0.01745329251;
+  state.roll_rate  *= 0.01745329251; // rad/s
+  state.pitch_rate *= 0.01745329251; // pi / 180
+  state.yaw_rate   *= 0.01745329251;
 
   time = micros();
   if (time - previousIteration > 0) {
@@ -99,39 +99,40 @@ void loop() {
   previousIteration = time;
   
   // Track orientation changes
-  rollAngle  += rollRate  * iterationTime / 1000000;
-  pitchAngle += pitchRate * iterationTime / 1000000;
+  state.roll_angle  += state.roll_rate  * iterationTime / 1000000;
+  state.pitch_angle += state.pitch_rate * iterationTime / 1000000;
   // Slip angle is more complicated since the reference frame is free to rotate in the yaw direction
   // these angles are zeroed when lateral acceleration is small
     
   // Zero the orientation any time the car is inertial.
-  if (fabs(longitudinalAccel) < 0.1 && fabs(lateralAccel) < 0.1) {
-    pitchAngle = 0.0;
-    rollAngle  = 0.0;
-    slip       = 0.0;
+  if (fabs(state.longitudinal_accel) < 0.05 && fabs(state.lateral_accel) < 0.05) {
+    state.pitch_angle = 0.0;
+    state.roll_angle  = 0.0;
+    state.slip        = 0.0;
   }
 
   // determine lockup amount (127 = 50% duty cycle MAX)
   
-  if (longitudinal_sensitivity == 0) {
+  if (state.longitudinal_sensitivity == 0) {
     // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
-    lockup = 127.0 * lateral_sensitivity / 15; // manual mode if rampRate set to zero
+    state.lockup = 127.0 * state.lateral_sensitivity / 15; // manual mode if rampRate set to zero
   } else {
-    float longitudinal_friction = 1.6 - 0.1 * (float)longitudinal_sensitivity;
-    float lateral_friction      = 1.6 - 0.1 * (float)lateral_sensitivity;
+    float longitudinal_friction = 1.6 - 0.1 * (float)state.longitudinal_sensitivity;
+    float lateral_friction      = 1.6 - 0.1 * (float)state.lateral_sensitivity;
 
     // Different logic for braking versus accelerating. A dead zone under light deceleration may be useful.
     float x_squared = 0.0;
-    if (longitudinalAccel > 0.0) {
-      x_squared = longitudinalAccel / longitudinal_friction;
-    } else if (fabs(lateralAccel / verticalAccel) > brake_lock_begin * 0.1) {
-      x_squared = (fabs(longitudinalAccel) - brake_lock_begin * 0.1 * verticalAccel) / (1.0 + brake_ramp_width * 0.1);
+    if (state.longitudinal_accel > 0.0) {
+      x_squared = state.longitudinal_accel / longitudinal_friction;
+    } else if (fabs(state.longitudinal_accel / state.vertical_accel) > state.brake_lock_begin * 0.1) {
+      x_squared = (fabs(state.longitudinal_accel) - state.brake_lock_begin * 0.1 * state.vertical_accel) / 
+                  (1.0 + state.brake_ramp_width * 0.1);
     }
     x_squared *= x_squared;
 
-    float y_squared = (lateralAccel / lateral_friction) * (lateralAccel / lateral_friction);
+    float y_squared = (state.lateral_accel / lateral_friction) * (state.lateral_accel / lateral_friction);
 
-    lockup = 127.0 * sqrt(x_squared + y_squared) / fabs(verticalAccel); 
+    state.lockup = 127.0 * sqrt(x_squared + y_squared) / fabs(state.vertical_accel); 
 
     // Original logic. 
     // I haven't really tested it yet, but not sure if comparing yaw rate to lateral / speed is a good idea since it is reactive rather than proactive.
@@ -149,37 +150,22 @@ void loop() {
     // lockup = 127.0 * (lock_from_acceleration + lock_from_yaw_rate);
   }
 
-  if (lockup > 127.0) {
-    lockup = 127.0; // don't exceed 50% duty cycle
+  if (state.lockup > 127.0) {
+    state.lockup = 127.0; // don't exceed 50% duty cycle
   }
-  if (lockup < 0.0) {
-    lockup = 0.0; // no negative PWM values
+  if (state.lockup < 0.0) {
+    state.lockup = 0.0; // no negative PWM values
   }
   
   // send PWM signal to power shield
-  analogWrite(DIFF_LOCK_PIN, lockup);
+  analogWrite(DIFF_LOCK_PIN, state.lockup);
 
   // LED changes from cyan to red and becomes brighter as the diff locks.
   // display.set_rgb(2 * lockup, 64 - lockup / 2.0, 64 - lockup / 2.0);
   // 0 cyan -> 25 green -> 50 yellow -> 75 red 
-  display.set_rgb(2 * lockup, 223 - lockup, 159 - lockup);
+  display.set_rgb(2 * state.lockup, 223 - state.lockup, 159 - state.lockup);
 
-  display.update(
-        lockup,
-        longitudinalAccel,
-        lateralAccel,
-        verticalAccel,
-        rollRate,
-        pitchRate,
-        yawRate,
-        longitudinalSpeed,
-        rollAngle,
-        pitchAngle,
-        longitudinal_sensitivity,
-        lateral_sensitivity,
-        brake_lock_begin,
-        brake_ramp_width
-        );
+  display.update(state);
 }
 
 /** 
@@ -195,7 +181,7 @@ void checkSpeedo() {
       if (time - lastTick > 0) 
         speedoPeriod = (time - lastTick) / 1000.0; // milliseconds
       lastTick = time;
-      longitudinalSpeed = /*speedCorrection **/ 877.193 / speedoPeriod; //+0.125; //approximate mph
+      state.longitudinal_speed = /*speedCorrection **/ 877.193 / speedoPeriod; //+0.125; //approximate mph
     }
   }
   if (analogRead(SPEEDOMETER_PIN) < 32 /* ~0.15625V */) {

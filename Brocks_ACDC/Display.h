@@ -1,3 +1,5 @@
+#pragma once
+
 // This is the LCD Keypad I used - https://www.adafruit.com/product/716
 
 #include <Adafruit_RGBLCDShield.h> // https://github.com/adafruit/Adafruit-RGB-LCD-Shield-Library
@@ -5,6 +7,8 @@
 #include "math.h"
 #include <Arduino.h>
 #include <string.h>
+
+#include "Vehicle_State.h"
 
 #define USER_READ_TIME_MILLIS   1000 * 4 // * 4 CLK correction
 #define ITERATIONS_BETWEEN_PRINTS  64
@@ -48,22 +52,7 @@ struct Display
     void show_mode();
 
     /** Update the display based on the provided state **/
-    void update(
-            int   lockup,
-            float longitudinalAccel,
-            float lateralAccel,
-            float verticalAccel,
-            float rollRate,
-            float pitchRate,
-            float yawRate,
-            float longitudinalSpeed,
-            float rollAngle,
-            float pitchAngle,
-            uint8_t longitudinal_sensitivity,
-            uint8_t lateral_sensitivity,
-            uint8_t brake_lock_begin,
-            uint8_t brake_ramp_width
-            );
+    void update(VehicleState state);
 
     /** Prevent any user inputs or screen refreshes for the provided time. **/
     void delay_UI(unsigned long ms);

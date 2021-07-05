@@ -1,5 +1,6 @@
 #include "Display.h"
 #include "Storage.h"
+#include "Brocks_ACDC.h"
 
 #define ANTI_BOUNCE_MILLIS 128 * 4 // * 4 CLK correction
 
@@ -31,10 +32,7 @@ void init_UI() {
 }
 
 /** Adjust the sensitivity configurations based on the provided button input. **/
-void adjust(uint8_t button, 
-            long EEPROM_ADDR = SENSITIVITIES_ADDR, 
-            uint8_t& value_1 = longitudinal_sensitivity,
-            uint8_t& value_2 = lateral_sensitivity) {
+void adjust(uint8_t button, long EEPROM_ADDR, uint8_t& value_1, uint8_t& value_2) {
   switch (button) {
     case BUTTON_UP:
       if (value_1 < 0x0f) {
@@ -58,7 +56,7 @@ void adjust(uint8_t button,
       break;
     case BUTTON_SELECT:
       adjusting_sensitivities = false;
-      adjusting_brake = false;
+      adjusting_brake         = false;
       EEPROM_write_short_pair(EEPROM_ADDR, value_1, value_2);
       display.print("Configuration   ",
                     "saved to EEPROM.");
@@ -83,18 +81,18 @@ void check_user_input() {
   }
 
   if (adjusting_sensitivities) {
-    return adjust(button, SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
+    return adjust(button, SENSITIVITIES_ADDR, state.longitudinal_sensitivity, state.lateral_sensitivity);
   } else if (adjusting_brake) {
-    return adjust(button, BRAKE_THRESHOLDS_ADDR, brake_lock_begin, brake_ramp_width);
+    return adjust(button, BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin, state.brake_ramp_width);
   }
 
   // Special behavior for directional buttons on the config screens
   if (display.mode == DisplayMode::CONFIGS && button != BUTTON_SELECT) {
     adjusting_sensitivities = true;
-    return adjust(button, SENSITIVITIES_ADDR, longitudinal_sensitivity, lateral_sensitivity);
+    return adjust(button, SENSITIVITIES_ADDR, state.longitudinal_sensitivity, state.lateral_sensitivity);
   }else if (display.mode == DisplayMode::CONFIGS_2 && button != BUTTON_SELECT) {
     adjusting_brake = true;
-    return adjust(button, BRAKE_THRESHOLDS_ADDR, brake_lock_begin, brake_ramp_width);
+    return adjust(button, BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin, state.brake_ramp_width);
   }
 
   switch (button) {

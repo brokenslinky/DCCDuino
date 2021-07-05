@@ -51,22 +51,7 @@ void Display::show_mode() {
     delay_UI(USER_READ_TIME_MILLIS); // Give the user time to read.
 }
 
-void Display::update(
-        int   lockup,
-        float longitudinalAccel,
-        float lateralAccel,
-        float verticalAccel,
-        float rollRate,
-        float pitchRate,
-        float yawRate,
-        float longitudinalSpeed,
-        float rollAngle,
-        float pitchAngle,
-        uint8_t longitudinal_sensitivity,
-        uint8_t lateral_sensitivity, 
-        uint8_t brake_lock_begin,
-        uint8_t brake_ramp_width
-        ) 
+void Display::update(VehicleState state) 
 {
     // print to LCD
     printIterationCounter++;
@@ -75,34 +60,34 @@ void Display::update(
     }
     printIterationCounter = 0;
 
-    float horizontalAccel = sqrt(longitudinalAccel * longitudinalAccel + lateralAccel * lateralAccel);
+    float horizontal_accel = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel);
 
     switch (mode) {
         case DisplayMode::CONFIGS:
-            if (longitudinal_sensitivity == 0) {
+            if (state.longitudinal_sensitivity == 0) {
                 // Manual mode accessed by turning longitudinal sensitivity to zero.
                 return print("Manual Mode Lock",
-                    String((float)lockup * 100.0 / 127.0) + " %");
+                    String((float)state.lockup * 100.0 / 127.0) + " %");
             }
-            return print("Longitudinal: " + String(longitudinal_sensitivity),
-                         "Lateral:      " + String(lateral_sensitivity));
+            return print("Longitudinal: " + String(state.longitudinal_sensitivity),
+                         "Lateral:      " + String(state.lateral_sensitivity));
         case DisplayMode::CONFIGS_2:
-            return print("Brake begin:  " + String(brake_lock_begin),
-                         "Ramp width:   " + String(brake_ramp_width));
+            return print("Brake begin:  " + String(state.brake_lock_begin),
+                         "Ramp width:   " + String(state.brake_ramp_width));
         case DisplayMode::STATS:
             switch(subscreen) {
                 case 0:
                     return print("Center Diff Lock",
-                        String((float)lockup * 100.0 / 127.0) + " %");
+                        String((float)state.lockup * 100.0 / 127.0) + " %");
                 case 1:
                     return print("Horizontal Accel",
-                        String(horizontalAccel / verticalAccel) + " g");
+                        String(horizontal_accel / state.vertical_accel) + " g");
                 case 2:
                     return print("Roll Angle:     ",
-                        String(rollAngle * 180.0 / PI) + " degrees");
+                        String(state.roll_angle * 180.0 / PI) + " degrees");
                 case 3:
                     return print("Pitch Angle:    ",
-                        String(pitchAngle * 180.0 / PI) + " degrees");
+                        String(state.pitch_angle * 180.0 / PI) + " degrees");
                 case 4:
                     subscreen = 0;
                     return;
@@ -115,25 +100,25 @@ void Display::update(
             switch (subscreen) {
                 case 0:
                     return print("Longitudinal Acc",
-                        String(longitudinalAccel / verticalAccel) + " g");
+                        String(state.longitudinal_accel / state.vertical_accel) + " g");
                 case 1:
                     return print("Lateral Accel:  ",
-                        String(lateralAccel / verticalAccel) + " g");
+                        String(state.lateral_accel / state.vertical_accel) + " g");
                 case 2:
                     return print("Yaw Rate:       ",
-                        String(yawRate * 180.0 / PI) + " deg/s");
+                        String(state.yaw_rate * 180.0 / PI) + " deg/s");
                 case 3:
                     return print("Roll Rate:      ",
-                        String(rollRate * 180.0 / PI) + " deg/s");
+                        String(state.roll_rate * 180.0 / PI) + " deg/s");
                 case 4:
                     return print("Pitch Rate:     ",
-                        String(pitchRate * 180.0 / PI) + " deg/s");
+                        String(state.pitch_rate * 180.0 / PI) + " deg/s");
                 case 5:
                     return print("Gravity:        ",
-                        String(verticalAccel / 256.0) + " g");
+                        String(state.vertical_accel / 256.0) + " g");
                 case 6:
                     return print("Speed:          ",
-                        String(longitudinalSpeed) + " mph");
+                        String(state.longitudinal_speed) + " mph");
                 case 7:
                     subscreen = 0;
                     return;

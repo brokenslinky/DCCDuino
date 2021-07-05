@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include <Wire.h>
 
@@ -9,6 +11,7 @@
 #include "Storage.h"
 #include "Orientation_Matrix.h"
 #include "User_Interface.h"
+#include "Vehicle_State.h"
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A3
@@ -20,15 +23,6 @@ const uint16_t calibrationIterations   = 512;
 // Structure for working with orientation corrections.
 OrientationMatrix orientation_matrix;
 
-// Working varibales
-static int   lockup            = 0;
-static float longitudinalAccel = 0.0;
-static float lateralAccel      = 0.0;
-static float verticalAccel     = 0.0;
-static float rollRate          = 0.0;
-static float pitchRate         = 0.0;
-static float yawRate           = 0.0;
-
 // Sensor readings
 float unadjusted_accel[3];
 float unadjusted_rotation[3];
@@ -39,28 +33,22 @@ float accelOffset[3];
 float gyroScale[3];
 float gyroOffset[3];
 
-// Slip angle and speed;
-float slip;
-float speedoPeriod;
-float longitudinalSpeed;
-float rollAngle;
-float pitchAngle;
-
 // All of this crap is for a speed calibration.
+float speedoPeriod       = 100.0;
 float previousSpeed      = 0.0;
 uint32_t previousCalTime = 0;
 float previousAccel      = 0.0;
 float savt;
 float svt2;
 float speedCorrection    = 1.0;
-boolean toss = true;
+boolean toss             = true;
 uint16_t numberSpeedData = 0;
-bool speedo_triggered = false;
-bool calibrationMode  = false;
+bool speedo_triggered    = false;
+bool calibrationMode     = false;
 
 // Variables for dynamic corrections
-unsigned long lastTick = 0;
-unsigned long interval = 1;
+unsigned long lastTick          = 0;
+unsigned long interval          = 1;
 unsigned long previousIteration = 0;
-unsigned long iterationTime = 0;
-unsigned long time = 0;
+unsigned long iterationTime     = 0;
+unsigned long time              = 0;
