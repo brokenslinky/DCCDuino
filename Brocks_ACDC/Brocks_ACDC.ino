@@ -46,13 +46,15 @@ void setup() {
   // Pull calibration data and configuration from EEPROM
   display.print("Getting cal data", 
                 "from EEPROM...  ");
-  EEPROM_read_vector(ACCEL_ZERO_ADDR,           accelOffset);
-  EEPROM_read_vector(GYRO_ZERO_ADDR,            gyroOffset);
-  EEPROM_read_vector(ACCEL_SCALE_ADDR,          accelScale);
-  EEPROM_read_vector(GYRO_SCALE_ADDR,           gyroScale);
-  EEPROM_read_vector(ORIENTATION_CAL_ADDR,      orientationCal);
-  EEPROM_read_short_pair(SENSITIVITIES_ADDR,    state.longitudinal_sensitivity, state.lateral_sensitivity);
-  EEPROM_read_short_pair(BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin,         state.brake_ramp_width);
+  EEPROM_read_vector(ACCEL_ZERO_ADDR,             accelOffset);
+  EEPROM_read_vector(GYRO_ZERO_ADDR,              gyroOffset);
+  EEPROM_read_vector(ACCEL_SCALE_ADDR,            accelScale);
+  EEPROM_read_vector(GYRO_SCALE_ADDR,             gyroScale);
+  EEPROM_read_vector(ORIENTATION_CAL_ADDR,        orientationCal);
+  EEPROM_read_short_pair(SENSITIVITIES_ADDR,      state.longitudinal_sensitivity, state.lateral_sensitivity);
+  EEPROM_read_short_pair(BRAKE_THRESHOLDS_ADDR,   state.brake_lock_begin,         state.brake_ramp_width);
+  EEPROM_read_short_pair(ACCEL_THRESHOLDS_ADDR,   state.accel_lock_begin,         state.accel_ramp_width);
+  EEPROM_read_short_pair(LATERAL_THRESHOLDS_ADDR, state.lateral_lock_begin,       state.lateral_ramp_width);
 
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);

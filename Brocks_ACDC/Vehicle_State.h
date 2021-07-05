@@ -10,6 +10,10 @@ static struct VehicleState {
     uint8_t lateral_sensitivity       = 0x00;
     uint8_t brake_lock_begin          = 0x0f;
     uint8_t brake_ramp_width          = 0x0f;
+    uint8_t accel_lock_begin          = 0x0f;
+    uint8_t accel_ramp_width          = 0x0f;
+    uint8_t lateral_lock_begin        = 0x0f;
+    uint8_t lateral_ramp_width        = 0x0f;
     float   roll_rate                 = 0.0;
     float   pitch_rate                = 0.0;
     float   yaw_rate                  = 0.0;
