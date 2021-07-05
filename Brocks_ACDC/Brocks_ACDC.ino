@@ -112,50 +112,7 @@ void loop() {
   }
 
   // determine lockup amount (127 = 50% duty cycle MAX)
-  
-  if (state.longitudinal_sensitivity == 0) {
-    // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
-    state.lockup = 127.0 * state.lateral_sensitivity / 15; // manual mode if rampRate set to zero
-  } else {
-    float longitudinal_friction = 1.6 - 0.1 * (float)state.longitudinal_sensitivity;
-    float lateral_friction      = 1.6 - 0.1 * (float)state.lateral_sensitivity;
-
-    // Different logic for braking versus accelerating. A dead zone under light deceleration may be useful.
-    float x_squared = 0.0;
-    if (state.longitudinal_accel > 0.0) {
-      x_squared = state.longitudinal_accel / longitudinal_friction;
-    } else if (fabs(state.longitudinal_accel / state.vertical_accel) > state.brake_lock_begin * 0.1) {
-      x_squared = (fabs(state.longitudinal_accel) - state.brake_lock_begin * 0.1 * state.vertical_accel) / 
-                  (1.0 + state.brake_ramp_width * 0.1);
-    }
-    x_squared *= x_squared;
-
-    float y_squared = (state.lateral_accel / lateral_friction) * (state.lateral_accel / lateral_friction);
-
-    state.lockup = 127.0 * sqrt(x_squared + y_squared) / fabs(state.vertical_accel); 
-
-    // Original logic. 
-    // I haven't really tested it yet, but not sure if comparing yaw rate to lateral / speed is a good idea since it is reactive rather than proactive.
-    // friction = 1.6 - 0.1 * (float)longitudinal_sensitivity;
-    // rampRate = 1.0 / ( 3.01 - 0.2 * (float)lateral_sensitivity);
-    // float lock_from_acceleration;
-    // if (longitudinalAccel > 0.0) {
-    //   lock_from_acceleration = 1.625 * (longitudinalAccel * cos(slip) - fabs(lateralAccel) * sin(slip)) / 
-    //     (friction * verticalAccel) - 1;
-    // } else if (fabs(lateralAccel / verticalAccel) > brake_lock_begin * 0.1) {
-    //   lock_from_acceleration = (fabs(longitudinalAccel / verticalAccel) - brake_lock_begin * 0.1) / (1.0 + brake_ramp_width * 0.1);
-    // }
-    // float lock_from_yaw_rate = rampRate * 0.04559 * fabs(yawRate) * longitudinalSpeed / 
-    //                   (fabs(lateralAccel) * cos(slip) * cos(slip) + longitudinalAccel * cos(slip) * sin(slip));
-    // lockup = 127.0 * (lock_from_acceleration + lock_from_yaw_rate);
-  }
-
-  if (state.lockup > 127.0) {
-    state.lockup = 127.0; // don't exceed 50% duty cycle
-  }
-  if (state.lockup < 0.0) {
-    state.lockup = 0.0; // no negative PWM values
-  }
+  state.lockup = LockingAlgorithms::calculate_lock(state);
   
   // send PWM signal to power shield
   analogWrite(DIFF_LOCK_PIN, state.lockup);

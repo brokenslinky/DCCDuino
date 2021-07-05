@@ -12,6 +12,7 @@
 #include "Orientation_Matrix.h"
 #include "User_Interface.h"
 #include "Vehicle_State.h"
+#include "Locking_Algorithms.h"
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A3
