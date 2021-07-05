@@ -8,7 +8,9 @@ Display display;
 
 bool calibrating             = false;
 bool adjusting_sensitivities = false;
+bool adjusting_accel         = false;
 bool adjusting_brake         = false;
+bool adjusting_lateral       = false;
 
 // In-memory copies of sensitivities
 // Declared here so we can adjust them.
@@ -24,7 +26,9 @@ void init_UI() {
   display.init();
   calibrating              = false;
   adjusting_sensitivities  = false;
+  adjusting_accel          = false;
   adjusting_brake          = false;
+  adjusting_lateral        = false;
   longitudinal_sensitivity = 0;
   lateral_sensitivity      = 0;
   brake_lock_begin         = 2;
@@ -56,7 +60,9 @@ void adjust(uint8_t button, long EEPROM_ADDR, uint8_t& value_1, uint8_t& value_2
       break;
     case BUTTON_SELECT:
       adjusting_sensitivities = false;
+      adjusting_accel         = false;
       adjusting_brake         = false;
+      adjusting_lateral       = false;
       EEPROM_write_short_pair(EEPROM_ADDR, value_1, value_2);
       display.print("Configuration   ",
                     "saved to EEPROM.");
@@ -82,17 +88,27 @@ void check_user_input() {
 
   if (adjusting_sensitivities) {
     return adjust(button, SENSITIVITIES_ADDR, state.longitudinal_sensitivity, state.lateral_sensitivity);
+  } else if (adjusting_accel) {
+    return adjust(button, ACCEL_THRESHOLDS_ADDR, state.accel_lock_begin, state.accel_ramp_width);
   } else if (adjusting_brake) {
     return adjust(button, BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin, state.brake_ramp_width);
+  } else if (adjusting_lateral) {
+    return adjust(button, LATERAL_THRESHOLDS_ADDR, state.lateral_lock_begin, state.lateral_ramp_width);
   }
 
   // Special behavior for directional buttons on the config screens
-  if (display.mode == DisplayMode::CONFIGS && button != BUTTON_SELECT) {
+  if (display.mode == DisplayMode::SENSITIVITY_CONFIGS && button != BUTTON_SELECT) {
     adjusting_sensitivities = true;
     return adjust(button, SENSITIVITIES_ADDR, state.longitudinal_sensitivity, state.lateral_sensitivity);
-  }else if (display.mode == DisplayMode::CONFIGS_2 && button != BUTTON_SELECT) {
+  } else if (display.mode == DisplayMode::ACCELERATION_CONFIGS && button != BUTTON_SELECT) {
+    adjusting_accel = true;
+    return adjust(button, ACCEL_THRESHOLDS_ADDR, state.accel_lock_begin, state.accel_ramp_width);
+  } else if (display.mode == DisplayMode::BRAKING_CONFIGS && button != BUTTON_SELECT) {
     adjusting_brake = true;
     return adjust(button, BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin, state.brake_ramp_width);
+  } else if (display.mode == DisplayMode::LATERAL_CONFIGS && button != BUTTON_SELECT) {
+    adjusting_lateral = true;
+    return adjust(button, LATERAL_THRESHOLDS_ADDR, state.lateral_lock_begin, state.lateral_ramp_width);
   }
 
   switch (button) {

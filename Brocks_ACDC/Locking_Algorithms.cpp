@@ -1,4 +1,5 @@
 #include "Locking_Algorithms.h"
+#include "Vehicle_State.h"
 #include <math.h>
 
 int LockingAlgorithms::sensitivity_algorithm(VehicleState state) {
@@ -26,17 +27,17 @@ int LockingAlgorithms::donut_algorithm(VehicleState state) {
     float magnitude = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel);
     float phi = tan(fabs(state.lateral_accel / state.longitudinal_accel)); // Angle of net acceleration relative to longitudinal
 
-    float lateral_threshold      = state.lateral_lock_begin;
-    float lateral_full           = lateral_threshold + state.lateral_lock_begin;
-    float longitudinal_threshold = state.accel_lock_begin;
-    float longitudinal_full      = longitudinal_threshold + state.accel_ramp_width;
+    float lateral_threshold      = 0.1 * state.lateral_lock_begin;
+    float lateral_full           = lateral_threshold + 0.1 * state.lateral_lock_begin;
+    float longitudinal_threshold = 0.1 * state.accel_lock_begin;
+    float longitudinal_full      = longitudinal_threshold + 0.1 * state.accel_ramp_width;
     if (state.longitudinal_accel < 0.0) {
-        longitudinal_threshold = state.brake_lock_begin;
-        longitudinal_full      = longitudinal_threshold + state.brake_ramp_width;
+        longitudinal_threshold = 0.1 * state.brake_lock_begin;
+        longitudinal_full      = longitudinal_threshold + 0.1 * state.brake_ramp_width;
     }
 
     // ellipse interpolation
-    float threshold = longitudinal_threshold * state.lateral_lock_begin / 
+    float threshold = longitudinal_threshold * lateral_threshold / 
                       sqrt(longitudinal_threshold * sin(phi) * longitudinal_threshold * sin(phi) + 
                            lateral_threshold * cos(phi) * lateral_threshold * cos(phi));
     float full_lock = longitudinal_full * lateral_full / 

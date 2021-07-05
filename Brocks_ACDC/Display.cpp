@@ -41,8 +41,21 @@ void Display::set_rgb(uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 void Display::show_mode() {
-    if (mode== DisplayMode::CONFIGS) {
-        print("Configuration   ");
+    if (mode== DisplayMode::SENSITIVITY_CONFIGS) {
+        print("Sensitivity     ",
+              "   Configuration");
+        // Disable this config screen since we aren't using this algorithm.
+        mode++;
+        return show_mode();
+    } else if (mode == DisplayMode::ACCELERATION_CONFIGS) {
+        print("Forward Accel   ",
+              "   Configuration");
+    } else if (mode == DisplayMode::BRAKING_CONFIGS) {
+        print("Braking         ",
+              "   Configuration");
+    } else if (mode == DisplayMode::LATERAL_CONFIGS) {
+        print("Lateral Accel   ",
+              "   Configuration");
     } else if (mode == DisplayMode::STATS) {
         print("Status          ");
     } else if (mode == DisplayMode::INPUTS) {
@@ -63,7 +76,7 @@ void Display::update(VehicleState state)
     float horizontal_accel = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel);
 
     switch (mode) {
-        case DisplayMode::CONFIGS:
+        case DisplayMode::SENSITIVITY_CONFIGS:
             if (state.longitudinal_sensitivity == 0) {
                 // Manual mode accessed by turning longitudinal sensitivity to zero.
                 return print("Manual Mode Lock",
@@ -71,9 +84,15 @@ void Display::update(VehicleState state)
             }
             return print("Longitudinal: " + String(state.longitudinal_sensitivity),
                          "Lateral:      " + String(state.lateral_sensitivity));
-        case DisplayMode::CONFIGS_2:
+        case DisplayMode::ACCELERATION_CONFIGS:
+            return print("Accel begin:  " + String(state.accel_lock_begin),
+                         "Ramp width:   " + String(state.accel_ramp_width));
+        case DisplayMode::BRAKING_CONFIGS:
             return print("Brake begin:  " + String(state.brake_lock_begin),
                          "Ramp width:   " + String(state.brake_ramp_width));
+        case DisplayMode::LATERAL_CONFIGS:
+            return print("Latral begin: " + String(state.lateral_lock_begin),
+                         "Ramp width:   " + String(state.lateral_ramp_width));
         case DisplayMode::STATS:
             switch(subscreen) {
                 case 0:
