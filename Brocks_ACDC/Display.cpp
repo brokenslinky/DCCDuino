@@ -8,7 +8,7 @@ void Display::init() {
     lcd_keypad.begin(16, 2);
     lcd_keypad.setBacklight(0x6);
 
-    mode                  = 0;
+    mode                  = 1; // Disable sensitivities screen since we aren't using that algorithm.
     subscreen             = 0;
     printIterationCounter = 0;
 }
