@@ -11,8 +11,9 @@
 #define BRAKE_THRESHOLDS_ADDR   0x3d // (61) 2 4-bits =  1 byte
 #define ACCEL_THRESHOLDS_ADDR   0x3e // (62) 2 4-bits =  1 byte
 #define LATERAL_THRESHOLDS_ADDR 0x3f // (63) 2 4-bits =  1 byte
+#define MANUAL_CONTROLS_ADDR    0x40 // (64) 2 4-bits =  1 byte
 
-//next available address is 0x40 (64)
+//next available address is 0x41 (65)
 //last available addresses is 0xff (255)
 
 #include <EEPROM.h>

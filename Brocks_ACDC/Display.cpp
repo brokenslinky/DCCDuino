@@ -56,6 +56,8 @@ void Display::show_mode() {
     } else if (mode == DisplayMode::LATERAL_CONFIGS) {
         print("Lateral Accel   ",
               "   Configuration");
+    } else if (mode == DisplayMode::MANUAL_CONTROL) {
+        print("Manual Control  ");
     } else if (mode == DisplayMode::STATS) {
         print("Status          ");
     } else if (mode == DisplayMode::INPUTS) {
@@ -93,6 +95,11 @@ void Display::update(VehicleState state)
         case DisplayMode::LATERAL_CONFIGS:
             return print("Latral begin: " + String(state.lateral_lock_begin),
                          "Ramp width:   " + String(state.lateral_ramp_width));
+        case DisplayMode::MANUAL_CONTROL:
+            return print("Manual Mode:    ",
+                         state.manual_mode & 0x01 ? 
+                         String((float)state.lockup / 127.0) + "%" : 
+                         "             OFF");
         case DisplayMode::STATS:
             switch(subscreen) {
                 case 0:

@@ -55,6 +55,7 @@ void setup() {
   EEPROM_read_short_pair(BRAKE_THRESHOLDS_ADDR,   state.brake_lock_begin,         state.brake_ramp_width);
   EEPROM_read_short_pair(ACCEL_THRESHOLDS_ADDR,   state.accel_lock_begin,         state.accel_ramp_width);
   EEPROM_read_short_pair(LATERAL_THRESHOLDS_ADDR, state.lateral_lock_begin,       state.lateral_ramp_width);
+  EEPROM_read_short_pair(MANUAL_CONTROLS_ADDR,    state.manual_lock_amount,       state.manual_mode);
 
   // Create calibration matrix from orientation data
   orientation_matrix.update(orientationCal);

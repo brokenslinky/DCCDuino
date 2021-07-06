@@ -2,11 +2,11 @@
 
 struct LockingAlgorithms {
     static int calculate_lock(VehicleState state) {
-        if (state.longitudinal_sensitivity == 0) {
-            // Manual mode is accessed by reducing the longitudinal sensitivity to zero.
-            state.lockup = 127.0 * state.lateral_sensitivity / 15; // manual mode if rampRate set to zero
+        if (state.manual_mode & 0x01) {
+            // Manual mode overrides other algorithms if active.
+            state.lockup = 127.0 * state.manual_lock_amount / 15; // manual mode if rampRate set to zero
         } else {
-            state.lockup = sensitivity_algorithm(state);
+            state.lockup = donut_algorithm(state);
         }
 
         if (state.lockup > 127.0) {

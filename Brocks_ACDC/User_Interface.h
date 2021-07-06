@@ -11,6 +11,7 @@ bool adjusting_sensitivities = false;
 bool adjusting_accel         = false;
 bool adjusting_brake         = false;
 bool adjusting_lateral       = false;
+bool adjusting_manual        = false;
 
 // In-memory copies of sensitivities
 // Declared here so we can adjust them.
@@ -63,6 +64,7 @@ void adjust(uint8_t button, long EEPROM_ADDR, uint8_t& value_1, uint8_t& value_2
       adjusting_accel         = false;
       adjusting_brake         = false;
       adjusting_lateral       = false;
+      adjusting_manual        = false;
       EEPROM_write_short_pair(EEPROM_ADDR, value_1, value_2);
       display.print("Configuration   ",
                     "saved to EEPROM.");
@@ -94,6 +96,8 @@ void check_user_input() {
     return adjust(button, BRAKE_THRESHOLDS_ADDR, state.brake_lock_begin, state.brake_ramp_width);
   } else if (adjusting_lateral) {
     return adjust(button, LATERAL_THRESHOLDS_ADDR, state.lateral_lock_begin, state.lateral_ramp_width);
+  } else if (adjusting_manual) {
+    return adjust(button, MANUAL_CONTROLS_ADDR, state.manual_lock_amount, state.manual_mode);
   }
 
   // Special behavior for directional buttons on the config screens
@@ -109,6 +113,9 @@ void check_user_input() {
   } else if (display.mode == DisplayMode::LATERAL_CONFIGS && button != BUTTON_SELECT) {
     adjusting_lateral = true;
     return adjust(button, LATERAL_THRESHOLDS_ADDR, state.lateral_lock_begin, state.lateral_ramp_width);
+  } else if (display.mode == DisplayMode::MANUAL_CONTROL && button != BUTTON_SELECT) {
+    adjusting_manual = true;
+    return adjust(button, MANUAL_CONTROLS_ADDR, state.manual_lock_amount, state.manual_mode);
   }
 
   switch (button) {
