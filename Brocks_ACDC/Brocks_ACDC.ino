@@ -8,11 +8,11 @@ void setup() {
 
   display.print("ACDCduino by    ",
                 "   Brock Palmer ");
-  // Orange light
-  display.set_rgb(255, 125, 0);
+  // Purple light
+  display.set_rgb(255, 0, 255);
 
   // I want to see the splash screen because I am vane.
-  display.delay_UI(USER_READ_TIME_MILLIS);
+  display.delay_UI(2 * USER_READ_TIME_MILLIS);
 
   pinMode(SPEEDOMETER_PIN,  INPUT);
   pinMode(DIFF_LOCK_PIN,    OUTPUT);
