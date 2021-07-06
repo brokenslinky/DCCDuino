@@ -2,7 +2,7 @@
 #include "Storage.h"
 #include "Brocks_ACDC.h"
 
-#define ANTI_BOUNCE_MILLIS 128 * 4 // * 4 CLK correction
+#define ANTI_BOUNCE_MILLIS 256 * 4 // * 4 CLK correction
 
 Display display;
 
