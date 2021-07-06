@@ -98,7 +98,7 @@ void Display::update(VehicleState state)
         case DisplayMode::MANUAL_CONTROL:
             return print("Manual Mode:    ",
                          state.manual_mode & 0x01 ? 
-                         String((float)state.lockup / 127.0) + "%" : 
+                         String(100.0 * (float)state.lockup / 127.0) + "%" : 
                          "             OFF");
         case DisplayMode::STATS:
             switch(subscreen) {
