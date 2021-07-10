@@ -14,15 +14,13 @@
 #include "Vehicle_State.h"
 #include "Locking_Algorithms.h"
 
-// Accelerometer/gyrometer filtering
-#define IMU_FILTER_ITERATIONS 16
+// Filtering
+#define IMU_FILTER_ITERATIONS  16
+#define CALIBRATION_ITERATIONS 512
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A3
 #define DIFF_LOCK_PIN   9
-
-// Settings
-const uint16_t calibrationIterations   = 512;
 
 // Structure for working with orientation corrections.
 OrientationMatrix orientation_matrix;

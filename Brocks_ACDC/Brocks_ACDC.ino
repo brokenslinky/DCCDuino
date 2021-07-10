@@ -189,7 +189,7 @@ void perform_calibration() {
   display.print("  Measuring     ", 
                 "  Orientation   ");
 
-  for (int i = 0; i < calibrationIterations; i++) {
+  for (int i = 0; i < CALIBRATION_ITERATIONS; i++) {
     // Display orange light for wait
     display.set_rgb(255, 150, 0);
     
@@ -221,7 +221,7 @@ void perform_calibration() {
   
   // convert gyroOffset from sum to average and write to EEPROM
   for (int j = 0; j < 3; j++) {
-    gyroOffset[j] /= calibrationIterations;
+    gyroOffset[j] /= CALIBRATION_ITERATIONS;
   }
   EEPROM_write_vector(GYRO_ZERO_ADDR, gyroOffset);
 
