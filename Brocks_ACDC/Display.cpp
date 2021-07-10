@@ -75,8 +75,6 @@ void Display::update(VehicleState state)
     }
     printIterationCounter = 0;
 
-    float horizontal_accel = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel);
-
     switch (mode) {
         case DisplayMode::SENSITIVITY_CONFIGS:
             if (state.longitudinal_sensitivity == 0) {
@@ -106,14 +104,23 @@ void Display::update(VehicleState state)
                     return print("Center Diff Lock",
                         String((float)state.lockup * 100.0 / 127.0) + " %");
                 case 1:
-                    return print("Horizontal Accel",
-                        String(horizontal_accel / state.vertical_accel) + " g");
+                    {
+                        // horizontal_accel is only used in this case. 
+                        // Put it in a block just so the compiler doesn't throw warnings. 
+                        float horizontal_accel = sqrt(
+                            state.longitudinal_accel * state.longitudinal_accel + 
+                            state.lateral_accel * state.lateral_accel);
+                        return print("Horizontal Accel",
+                            String(horizontal_accel / state.vertical_accel) + " g");
+                    }
                 case 2:
-                    return print("Roll Angle:     ",
-                        String(state.roll_angle * 180.0 / PI) + " degrees");
+                    // Angle tracking not implemented
+                    subscreen = 0;
+                    // return print("Roll Angle:     ",
+                    //     String(state.roll_angle * 180.0 / PI) + " degrees");
                 case 3:
-                    return print("Pitch Angle:    ",
-                        String(state.pitch_angle * 180.0 / PI) + " degrees");
+                    // return print("Pitch Angle:    ",
+                    //     String(state.pitch_angle * 180.0 / PI) + " degrees");
                 case 4:
                     subscreen = 0;
                     return;
@@ -131,20 +138,24 @@ void Display::update(VehicleState state)
                     return print("Lateral Accel:  ",
                         String(state.lateral_accel / state.vertical_accel) + " g");
                 case 2:
-                    return print("Yaw Rate:       ",
-                        String(state.yaw_rate * 180.0 / PI) + " deg/s");
-                case 3:
-                    return print("Roll Rate:      ",
-                        String(state.roll_rate * 180.0 / PI) + " deg/s");
-                case 4:
-                    return print("Pitch Rate:     ",
-                        String(state.pitch_rate * 180.0 / PI) + " deg/s");
-                case 5:
                     return print("Gravity:        ",
                         String(state.vertical_accel / 256.0) + " g");
+                case 3:
+                    // Anglular measurements not currently used
+                    subscreen = 0;
+                    return;
+                    // return print("Yaw Rate:       ",
+                    //     String(state.yaw_rate * 180.0 / PI) + " deg/s");
+                case 4:
+                    // return print("Roll Rate:      ",
+                    //     String(state.roll_rate * 180.0 / PI) + " deg/s");
+                case 5:
+                    // return print("Pitch Rate:     ",
+                    //     String(state.pitch_rate * 180.0 / PI) + " deg/s");
                 case 6:
-                    return print("Speed:          ",
-                        String(state.longitudinal_speed) + " mph");
+                    // Speed measurement not implemented
+                    // return print("Speed:          ",
+                    //     String(state.longitudinal_speed) + " mph");
                 case 7:
                     subscreen = 0;
                     return;
