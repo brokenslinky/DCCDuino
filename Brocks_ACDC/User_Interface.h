@@ -13,15 +13,6 @@ bool adjusting_brake         = false;
 bool adjusting_lateral       = false;
 bool adjusting_manual        = false;
 
-// In-memory copies of sensitivities
-// Declared here so we can adjust them.
-// These will be stored as 4 bits each and share 1 byte.
-// Maximum value = 15
-uint8_t longitudinal_sensitivity = 0;
-uint8_t lateral_sensitivity      = 0;
-uint8_t brake_lock_begin         = 2; // Normalize to 1 = 0.1g
-uint8_t brake_ramp_width         = 5; // Additive to brake_lock_begin. Also normalized to +1 = +.01g 
-
 /** Initialize **/
 void init_UI() {
   display.init();
@@ -30,10 +21,6 @@ void init_UI() {
   adjusting_accel          = false;
   adjusting_brake          = false;
   adjusting_lateral        = false;
-  longitudinal_sensitivity = 0;
-  lateral_sensitivity      = 0;
-  brake_lock_begin         = 2;
-  brake_ramp_width         = 5;
 }
 
 /** Adjust the sensitivity configurations based on the provided button input. **/
