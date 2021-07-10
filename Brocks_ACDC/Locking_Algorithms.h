@@ -3,7 +3,7 @@
 /** Structure to store any possible locking algorithms I want to try **/
 struct LockingAlgorithms {
     /** Determine the PWM argument to provide appropriate lock amount based on vehicle state **/
-    static int calculate_lock(VehicleState state) {
+    static int calculate_lock(VehicleState& state) {
         if (state.manual_mode & 0x01) {
             // Manual mode overrides other algorithms if active.
             state.lockup = 127.0 * state.manual_lock_amount / 15; // manual mode if rampRate set to zero
@@ -25,17 +25,17 @@ struct LockingAlgorithms {
      * Lock increases linearly with forward or lateral acceleration.
      * Braking has a programmable dead zone.
     **/
-    static int sensitivity_algorithm(VehicleState state);
+    static int sensitivity_algorithm(VehicleState& state);
 
     /**
      * Dead zone and ramp widths for each:
      * forward, braking, and lateral acceleration
     **/
-    static int donut_algorithm(VehicleState state);
+    static int donut_algorithm(VehicleState& state);
 
     /**
      * Lock increases linearly with longitudinal acceleration
      * and with ratio of rotational speed to lateral acceleration / speed
     **/
-    static int yaw_rate_reaction(VehicleState state);
+    static int yaw_rate_reaction(VehicleState& state);
 };

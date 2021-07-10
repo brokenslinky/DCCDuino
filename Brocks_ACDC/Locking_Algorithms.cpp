@@ -2,7 +2,7 @@
 #include "Vehicle_State.h"
 #include <math.h>
 
-int LockingAlgorithms::sensitivity_algorithm(VehicleState state) {
+int LockingAlgorithms::sensitivity_algorithm(VehicleState& state) {
     float longitudinal_friction = 1.6 - 0.1 * (float)state.longitudinal_sensitivity;
     float lateral_friction      = 1.6 - 0.1 * (float)state.lateral_sensitivity;
 
@@ -23,7 +23,7 @@ int LockingAlgorithms::sensitivity_algorithm(VehicleState state) {
     return state.lockup;
 }
 
-int LockingAlgorithms::donut_algorithm(VehicleState state) {
+int LockingAlgorithms::donut_algorithm(VehicleState& state) {
     float magnitude = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel);
     float phi = tan(fabs(state.lateral_accel / state.longitudinal_accel)); // Angle of net acceleration relative to longitudinal
 
@@ -50,7 +50,7 @@ int LockingAlgorithms::donut_algorithm(VehicleState state) {
     return state.lockup;
 }
 
-int LockingAlgorithms::yaw_rate_reaction(VehicleState state) {
+int LockingAlgorithms::yaw_rate_reaction(VehicleState& state) {
     float friction = 1.6 - 0.1 * (float)state.longitudinal_sensitivity;
     float ramp_rate = 1.0 / ( 3.01 - 0.2 * (float)state.lateral_sensitivity);
     float lock_from_acceleration;

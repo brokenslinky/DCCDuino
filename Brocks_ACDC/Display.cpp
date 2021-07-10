@@ -66,7 +66,7 @@ void Display::show_mode() {
     delay_UI(USER_READ_TIME_MILLIS); // Give the user time to read.
 }
 
-void Display::update(VehicleState state) 
+void Display::update(VehicleState& state) 
 {
     // print to LCD
     printIterationCounter++;

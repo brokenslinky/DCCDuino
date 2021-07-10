@@ -56,7 +56,7 @@ struct Display
     void show_mode();
 
     /** Update the display based on the provided state **/
-    void update(VehicleState state);
+    void update(VehicleState& state);
 
     /** Prevent any user inputs or screen refreshes for the provided time. **/
     void delay_UI(unsigned long ms);
