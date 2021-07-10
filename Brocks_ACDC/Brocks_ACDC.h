@@ -15,7 +15,7 @@
 #include "Locking_Algorithms.h"
 
 // Accelerometer/gyrometer filtering
-#define IMU_FILTER_ITERATIONS 4
+#define IMU_FILTER_ITERATIONS 16
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A3
