@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h> // for uint8_t
 
+/** Structure to store to known state of the vehicle **/
 static struct VehicleState {
     int     lockup                    = 0;
     float   longitudinal_accel        = 0.0;

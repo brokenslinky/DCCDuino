@@ -1,6 +1,8 @@
 #include "Vehicle_State.h"
 
+/** Structure to store any possible locking algorithms I want to try **/
 struct LockingAlgorithms {
+    /** Determine the PWM argument to provide appropriate lock amount based on vehicle state **/
     static int calculate_lock(VehicleState state) {
         if (state.manual_mode & 0x01) {
             // Manual mode overrides other algorithms if active.

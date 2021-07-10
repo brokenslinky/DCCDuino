@@ -10,7 +10,7 @@
 
 #include "Vehicle_State.h"
 
-#define USER_READ_TIME_MILLIS   1000 * 4 // * 4 CLK correction
+#define USER_READ_TIME_MILLIS      1000 * 4 // * 4 CLK correction
 #define ITERATIONS_BETWEEN_PRINTS  64
 
 // Pins for RGB light
@@ -18,6 +18,7 @@
 #define GREEN_PIN 5
 #define BLUE_PIN  6
 
+/** All menus for the user interface **/
 enum DisplayMode
 {
     STATS = 0,
@@ -30,9 +31,9 @@ enum DisplayMode
     ENUM_END
 };
 
+/** Wrapper for the LCD display/keypad with additional methods built in **/
 struct Display
 {
-    // LCD display and keypad
     Adafruit_RGBLCDShield lcd_keypad;
 
     uint8_t               mode;
