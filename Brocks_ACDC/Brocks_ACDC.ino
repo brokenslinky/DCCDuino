@@ -81,7 +81,19 @@ void loop() {
   // previousIteration = time;
   
   // Refresh data from Inertial Measurement Unit.
-  IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
+  for (int direction = 0; direction < 3; direction++) {
+    unadjusted_accel[direction] = 0;
+  }
+  for (int filter_iteration = 0; filter_iteration < IMU_FILTER_ITERATIONS; filter_iteration++) {
+    float unfiltered_measurement[3];
+    IMU.readAcceleration(unfiltered_measurement[0], unfiltered_measurement[1], unfiltered_measurement[2]);
+    for (int direction = 0; direction < 3; direction++) {
+      unadjusted_accel[direction] += unfiltered_measurement[direction];
+    }
+  }
+  for (int direction = 0; direction < 3; direction++) {
+    unadjusted_accel[direction] /= IMU_FILTER_ITERATIONS;
+  }
 
   // Zero and scale the sensor data.
   float x = (unadjusted_accel[0] - accelOffset[0]) * accelScale[0];
@@ -94,13 +106,25 @@ void loop() {
   state.vertical_accel     = orientation_matrix.vertical    (x, y, z);
 
   // Angular measurements are currently unused. Comment out for now.
-  // IMU.readGyroscope(unadjusted_rotation[0], unadjusted_rotation[1], unadjusted_rotation[2]);
+  // for (int direction = 0; direction < 3; direction++) {
+  //   unadjusted_rotation[direction] = 0;
+  // }
+  // for (int filter_iteration = 0; filter_iteration < IMU_FILTER_ITERATIONS; filter_iteration++) {
+  //   float unfiltered_measurement[3];
+  //   IMU.readGyroscope(unfiltered_measurement[0], unfiltered_measurement[1], unfiltered_measurement[2]);
+  //   for (int direction = 0; direction < 3; direction++) {
+  //     unadjusted_rotation[direction] += unfiltered_measurement[direction];
+  //   }
+  // }
+  // for (int direction = 0; direction < 3; direction++) {
+  //   unadjusted_rotation[direction] /= IMU_FILTER_ITERATIONS;
+  // }
   // float x_rot = (unadjusted_rotation[0] - gyroOffset[0]) * gyroScale[0];
   // float y_rot = (unadjusted_rotation[1] - gyroOffset[1]) * gyroScale[1];
   // float z_rot = (unadjusted_rotation[2] - gyroOffset[2]) * gyroScale[2];
-  // state.roll_rate          = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
-  // state.pitch_rate         = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
-  // state.yaw_rate           = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
+  // state.roll_rate   = orientation_matrix.longitudinal(x_rot, y_rot, z_rot);
+  // state.pitch_rate  = orientation_matrix.lateral     (x_rot, y_rot, z_rot);
+  // state.yaw_rate    = orientation_matrix.vertical    (x_rot, y_rot, z_rot);
   // //convert gyros to SI units
   // state.roll_rate  *= 0.01745329251; // rad/s
   // state.pitch_rate *= 0.01745329251; // pi / 180

@@ -14,6 +14,9 @@
 #include "Vehicle_State.h"
 #include "Locking_Algorithms.h"
 
+// Accelerometer/gyrometer filtering
+#define IMU_FILTER_ITERATIONS 4
+
 // Pin Assignments
 #define SPEEDOMETER_PIN A3
 #define DIFF_LOCK_PIN   9
