@@ -139,7 +139,7 @@ void Display::update(VehicleState state)
                         String(state.lateral_accel / state.vertical_accel) + " g");
                 case 2:
                     return print("Gravity:        ",
-                        String(state.vertical_accel / 256.0) + " g");
+                        String(state.vertical_accel) + " g");
                 case 3:
                     // Anglular measurements not currently used
                     subscreen = 0;
