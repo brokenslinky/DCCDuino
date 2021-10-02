@@ -1,9 +1,8 @@
 # DCCDuino
 Arduino controller for the center differential of Subaru STIs.
 
-# Brocks_ACDC or Manual_DCCD_Controller?
-I don't maintain Manual_DCCD_Controller. I only host it as a simplified example for users who wish to write their own logic.
+# Simplified Version
+Most visitors to this repository will primarily be interested in the Manual_DCCD_Controller folder. I don't maintain this folder, but host it as a simplified example for users who wish to write their own logic without any of the application-specific logic which I run on my own rallycross car.
 
-Brocks_ACDC is the one I use on my rallycross car and may contain some application-specific code.
-
-Consider the MIT license to cover both of these. You are free to use, modify, and distribute.
+# Brocks_ACDC
+This version is what I run on my own car and is an "active" center differential controller in that it responds to changes in vehicle state. Much more feature-rich than the manual version (and does include its own manual mode), but will be harder to troubleshoot.
