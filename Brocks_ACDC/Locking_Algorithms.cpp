@@ -19,12 +19,12 @@ int LockingAlgorithms::sensitivity_algorithm(VehicleState& state) {
     float y_squared = (state.lateral_accel / lateral_friction) * (state.lateral_accel / lateral_friction);
 
     state.lockup = 127.0 * sqrt(x_squared + y_squared) / fabs(state.vertical_accel); 
-
     return state.lockup;
 }
 
 int LockingAlgorithms::donut_algorithm(VehicleState& state) {
-    float magnitude = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel);
+    float magnitude = sqrt(state.longitudinal_accel * state.longitudinal_accel + state.lateral_accel * state.lateral_accel)
+                      / fabs(state.vertical_accel);
     float phi = tan(fabs(state.lateral_accel / state.longitudinal_accel)); // Angle of net acceleration relative to longitudinal
 
     float lateral_threshold      = 0.1 * state.lateral_lock_begin;
@@ -46,7 +46,6 @@ int LockingAlgorithms::donut_algorithm(VehicleState& state) {
     float ramp_width = full_lock - threshold;
 
     state.lockup = 127.0 * (magnitude - threshold) / ramp_width;
-
     return state.lockup;
 }
 
