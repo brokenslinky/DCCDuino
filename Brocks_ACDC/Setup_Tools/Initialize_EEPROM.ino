@@ -13,12 +13,12 @@
 // This symlink is untracked by the git repository.
 // You can create a symlink or just copy the file from the parent directory.
 
-float zero_vector[]   = {0.0, 0.0, 0.0}; // Default for offsets
-float one_vector[]    = {1.0, 1.0, 1.0}; // Default for scaling
+float ZERO_VECTOR[]   = {0.0, 0.0, 0.0}; // Default for offsets
+float ONE_VECTOR[]    = {1.0, 1.0, 1.0}; // Default for scaling
 
-float default_angle   = radians(60.0);
-float sixty_degrees[] = {0.0, -sin(default_angle), cos(default_angle)};
-// x = left, y = down-back, z = away from screen
+float DEFAULT_PITCH         = radians(60.0);
+float DEFAULT_ORIENTATION[] = {0.0, -sin(DEFAULT_PITCH), cos(DEFAULT_PITCH)};
+// x = left, y = down/rearward, z = away from screen
 
 void print_stored_vector(int EEPROM_ADDR, String descrition = "") {
     float vector[3];
@@ -40,11 +40,11 @@ void setup() {
     Serial.begin(9600);
     Wire.begin();
 
-    EEPROM_write_vector(ACCEL_ZERO_ADDR,      zero_vector);
-    EEPROM_write_vector(GYRO_ZERO_ADDR,       zero_vector);
-    EEPROM_write_vector(ACCEL_SCALE_ADDR,     one_vector);
-    EEPROM_write_vector(GYRO_SCALE_ADDR,      one_vector);
-    EEPROM_write_vector(ORIENTATION_CAL_ADDR, sixty_degrees);
+    EEPROM_write_vector(ACCEL_ZERO_ADDR,      ZERO_VECTOR);
+    EEPROM_write_vector(GYRO_ZERO_ADDR,       ZERO_VECTOR);
+    EEPROM_write_vector(ACCEL_SCALE_ADDR,     ONE_VECTOR);
+    EEPROM_write_vector(GYRO_SCALE_ADDR,      ONE_VECTOR);
+    EEPROM_write_vector(ORIENTATION_CAL_ADDR, DEFAULT_ORIENTATION);
     // This Represents no offsets or rescaling, 60 degree mounting pitch, no roll
     EEPROM_write_short_pair(SENSITIVITIES_ADDR, 0, 0);
     EEPROM_write_short_pair(BRAKE_THRESHOLDS_ADDR, 2, 5);
@@ -56,7 +56,7 @@ void setup() {
     print_stored_vector(ACCEL_SCALE_ADDR,     "Accel Scale");
     print_stored_vector(GYRO_SCALE_ADDR,      "Gyro Scale");
     print_stored_vector(ORIENTATION_CAL_ADDR, "Orientation");
-    print_stored_short_pair(SENSITIVITIES_ADDR, "Longitudinal Sensitivity", "Lateral Sensitivity");
+    print_stored_short_pair(SENSITIVITIES_ADDR,    "Longitudinal Sensitivity", "Lateral Sensitivity");
     print_stored_short_pair(BRAKE_THRESHOLDS_ADDR, "Brake Begin", "Brake Ramp Width");
 }
 

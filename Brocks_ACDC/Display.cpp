@@ -77,11 +77,6 @@ void Display::update(VehicleState& state)
 
     switch (mode) {
         case DisplayMode::SENSITIVITY_CONFIGS:
-            if (state.longitudinal_sensitivity == 0) {
-                // Manual mode accessed by turning longitudinal sensitivity to zero.
-                return print("Manual Mode Lock",
-                    String((float)state.lockup * 100.0 / 127.0) + " %");
-            }
             return print("Longitudinal: " + String(state.longitudinal_sensitivity),
                          "Lateral:      " + String(state.lateral_sensitivity));
         case DisplayMode::ACCELERATION_CONFIGS:

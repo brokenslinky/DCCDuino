@@ -1,4 +1,5 @@
 #include "Brocks_ACDC.h"
+#include "User_Interface.h"
 
 void setup() {
   Serial.begin(9600);
@@ -86,6 +87,7 @@ void loop() {
   }
   for (int filter_iteration = 0; filter_iteration < IMU_FILTER_ITERATIONS; filter_iteration++) {
     float unfiltered_measurement[3];
+    delay(IMU_READ_DELAY);
     IMU.readAcceleration(unfiltered_measurement[0], unfiltered_measurement[1], unfiltered_measurement[2]);
     for (int direction = 0; direction < 3; direction++) {
       unadjusted_accel[direction] += unfiltered_measurement[direction];
@@ -111,6 +113,7 @@ void loop() {
   // }
   // for (int filter_iteration = 0; filter_iteration < IMU_FILTER_ITERATIONS; filter_iteration++) {
   //   float unfiltered_measurement[3];
+  //   delay(IMU_READ_DELAY);
   //   IMU.readGyroscope(unfiltered_measurement[0], unfiltered_measurement[1], unfiltered_measurement[2]);
   //   for (int direction = 0; direction < 3; direction++) {
   //     unadjusted_rotation[direction] += unfiltered_measurement[direction];
@@ -154,6 +157,58 @@ void loop() {
   display.update(state);
 }
 
+void perform_calibration() {
+  float x = 0.0;
+  float y = 0.0;
+  float z = 0.0;
+  float g = 0.0;
+  for (int j = 0; j<3; j++) {
+    gyroOffset[j] = 0;
+  }
+  float tmp[3];
+
+  display.print("  Measuring     ", 
+                "  Orientation   ");
+  display.set_rgb(255, 150, 0); // Orange
+
+  for (int i = 0; i < CALIBRATION_ITERATIONS; i++) {
+    // Determine direction of gravity
+    IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
+    for ( int j = 0; j < 3; j++) {
+      tmp[j] = (unadjusted_accel[j] - accelOffset[j]) * accelScale[j];
+    }
+    x += tmp[0];
+    y += tmp[1];
+    z += tmp[2];
+    g += sqrt(tmp[0] * tmp[0] + tmp[1] * tmp[1] + tmp[2] * tmp[2]);
+
+    // Zero the gyro.
+    IMU.readGyroscope(unadjusted_rotation[0], unadjusted_rotation[1], unadjusted_rotation[2]);
+    for (int j = 0; j < 3; j++) {
+      gyroOffset[j] += unadjusted_rotation[j];
+    }
+
+    delay(IMU_READ_DELAY); // Give the IMU time to refresh between readings.
+  }
+
+  // save orientation to ROM and RAM
+  {
+    float orientation[3] = { x / g, y / g, z / g };
+    EEPROM_write_vector(ORIENTATION_CAL_ADDR, orientation);
+    orientation_matrix.update(orientation);
+  }
+  
+  // convert gyroOffset from sum to average and write to EEPROM
+  for (int j = 0; j < 3; j++) {
+    gyroOffset[j] /= CALIBRATION_ITERATIONS;
+  }
+  EEPROM_write_vector(GYRO_ZERO_ADDR, gyroOffset);
+
+  display.print("  Calibration   ",
+                "   Complete     ");
+  display.set_rgb(0, 255, 0); // green light
+}
+
 /** 
  * Need to check for a pulse from the speedometer signal frequently enough to catch every pulse.
  * ToDo: Use bluetooth to read speed from the car's ECU.
@@ -173,59 +228,4 @@ void checkSpeedo() {
   if (analogRead(SPEEDOMETER_PIN) < 32 /* ~0.15625V */) {
     speedo_triggered = false;
   }
-}
-
-/// while car is stationary, calibrate orientation and zero gyros
-void perform_calibration() {
-  float x = 0.0;
-  float y = 0.0;
-  float z = 0.0;
-  float g = 0.0;
-  for (int j = 0; j<3; j++) {
-    gyroOffset[j] = 0;
-  }
-  float tmp[3];
-
-  display.print("  Measuring     ", 
-                "  Orientation   ");
-
-  for (int i = 0; i < CALIBRATION_ITERATIONS; i++) {
-    // Display orange light for wait
-    display.set_rgb(255, 150, 0);
-    
-    // Determine direction of gravity
-    IMU.readAcceleration(unadjusted_accel[0], unadjusted_accel[1], unadjusted_accel[2]);
-    for ( int j = 0; j < 3; j++) {
-      tmp[j] = (unadjusted_accel[j] - accelOffset[j]) * accelScale[j];
-    }
-    x += tmp[0];
-    y += tmp[1];
-    z += tmp[2];
-    g += sqrt(tmp[0] * tmp[0] + tmp[1] * tmp[1] + tmp[2] * tmp[2]);
-
-    // Zero the gyro.
-    IMU.readGyroscope(unadjusted_rotation[0], unadjusted_rotation[1], unadjusted_rotation[2]);
-    for (int j = 0; j < 3; j++) {
-      gyroOffset[j] += unadjusted_rotation[j];
-    }
-
-    delay(2); // Give the IMU time to refresh.
-  }
-
-  // save orientation to ROM and RAM
-  {
-    float orientation[3] = { x / g, y / g, z / g };
-    EEPROM_write_vector(ORIENTATION_CAL_ADDR, orientation);
-    orientation_matrix.update(orientation);
-  }
-  
-  // convert gyroOffset from sum to average and write to EEPROM
-  for (int j = 0; j < 3; j++) {
-    gyroOffset[j] /= CALIBRATION_ITERATIONS;
-  }
-  EEPROM_write_vector(GYRO_ZERO_ADDR, gyroOffset);
-
-  display.print("  Calibration   ",
-                "   Complete     ");
-  display.set_rgb(0, 255, 0); // green light
 }

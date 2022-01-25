@@ -76,6 +76,12 @@ void check_user_input() {
     return;
   }
 
+  // Calibration is activated by LEFT and RIGHT buttons simultaneously
+  if (button == (BUTTON_LEFT | BUTTON_RIGHT)) {
+    perform_calibration();
+    return;
+  }
+
   if (adjusting_sensitivities) {
     return adjust(button, SENSITIVITIES_ADDR, state.longitudinal_sensitivity, state.lateral_sensitivity);
   } else if (adjusting_accel) {

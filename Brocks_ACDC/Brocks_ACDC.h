@@ -10,13 +10,13 @@
 
 #include "Storage.h"
 #include "Orientation_Matrix.h"
-#include "User_Interface.h"
 #include "Vehicle_State.h"
 #include "Locking_Algorithms.h"
 
 // Filtering
 #define IMU_FILTER_ITERATIONS  16
 #define CALIBRATION_ITERATIONS 512
+#define IMU_READ_DELAY         2
 
 // Pin Assignments
 #define SPEEDOMETER_PIN A3
@@ -54,3 +54,6 @@ unsigned long interval          = 1;
 unsigned long previousIteration = 0;
 unsigned long iterationTime     = 0;
 unsigned long time              = 0;
+
+// while car is stationary, calibrate orientation and zero gyros
+void perform_calibration();
