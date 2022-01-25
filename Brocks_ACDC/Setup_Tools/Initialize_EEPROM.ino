@@ -46,8 +46,10 @@ void setup() {
     EEPROM_write_vector(GYRO_SCALE_ADDR,      ONE_VECTOR);
     EEPROM_write_vector(ORIENTATION_CAL_ADDR, DEFAULT_ORIENTATION);
     // This Represents no offsets or rescaling, 60 degree mounting pitch, no roll
-    EEPROM_write_short_pair(SENSITIVITIES_ADDR, 0, 0);
-    EEPROM_write_short_pair(BRAKE_THRESHOLDS_ADDR, 2, 5);
+    EEPROM_write_short_pair(SENSITIVITIES_ADDR,       0,  0);
+    EEPROM_write_short_pair(BRAKE_THRESHOLDS_ADDR,    4,  4);
+    EEPROM_write_short_pair(ACCEL_THRESHOLDS_ADDR,    4,  3);
+    EEPROM_write_short_pair(LATERAL_THRESHOLDS_ADDR, 15, 15);
 
     // Verify the values were stored and can be read back.
     Serial.println("Wrote default calibration to EEPROM:");
