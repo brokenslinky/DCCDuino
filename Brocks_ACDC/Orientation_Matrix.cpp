@@ -32,6 +32,14 @@ void OrientationMatrix::apply_orientation_adjustment(float& x_in_longitudinal_ou
 
 void OrientationMatrix::update(float x_0, float y_0, float z_0) {
     /*
+    Using shorthand notations to explain the math: 
+    long = longitudinal, lat = lateral, vert = vertical (acceleration in the vehicle's coordinate system)
+    x, y, z = acceleration in the sensor's coordinate system
+    P = pitch, Y = yaw, R = roll (angle of the sensor relative to the vehicle)
+    x_0, y_0, z_0 = acceleration measured by the sensor while stationary
+    r_0 = sqrt(x_0 ^ 2 + y_0 ^ 2) force in the sensor's xy plane
+    g_0 = sqrt(r_0 ^ 2 + z_0 ^ 2) force due to gravity
+
     dlong/dx  dlong/dy  dlong/dz  =  cos(P)*cos(Y)          -cos(P)*sin(Y)   -sin(P)
     dlat /dx  dlat /dy  dlat /dz  =  sin(Y)*cos(R)           cos(Y)*cos(R)    sin(R)
     dvert/dx  dvert/dy  dvert/dz  =  sin(P)*cos(Y)*cos(R)   -sin(P)*sin(Y)*cos(R)    cos(P)*cos(R)
@@ -40,8 +48,6 @@ void OrientationMatrix::update(float x_0, float y_0, float z_0) {
     sin(P) = r_0 / g_0
     cos(Y) = x_0 / r_0
     sin(Y) = y_0 / r_0
-    r_0 = sqrt(x_0 ^ 2 + y_0 ^ 2)
-    g_0 = sqrt(r_0 ^ 2 + z_0 ^ 2)
 
     dlong/dx  dlong/dy  dlong/dz  =   z_0 * x_0 / (g_0 * r_0)             -z_0 * y_0 / (g_0 * r_0)          -r_0 / g_0
     dlat /dx  dlat /dy  dlat /dz  =   y_0 * cos(R) / r_0                   x_0 * cos(R) / r_0                sin(R)
@@ -49,6 +55,7 @@ void OrientationMatrix::update(float x_0, float y_0, float z_0) {
 
     Assume R is small.
     */
+
     float r_0 = sqrt(x_0 * x_0 + y_0 * y_0);
     float g_0 = sqrt(r_0 * r_0 + z_0 * z_0);
 
