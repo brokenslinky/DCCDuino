@@ -6,3 +6,6 @@ Most visitors to this repository will primarily be interested in the Manual_DCCD
 
 # Brocks_ACDC
 This version is what I run on my own car and is an "active" center differential controller in that it responds to changes in vehicle state. Much more feature-rich than the manual version (and does include its own manual mode), but will be harder to troubleshoot.
+
+### Note to Potential Employers
+I'm aware most projects would handle the two parallel versions by branching, however, the target audience of this project is hobbyists and dabblers, not primarily professional software developers. I believe using a file hierarchy rather than branches makes the repo more accessible to the target audience.
